@@ -1,3 +1,10 @@
 .vs/
 bin/
 obj/
+
+# IMPORTANT: Ignore sensitive files with API keys
+.env
+appsettings.json
+appsettings.*.json
+secrets.json
+*.config

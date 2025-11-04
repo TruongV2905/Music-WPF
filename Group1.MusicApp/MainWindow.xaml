@@ -4,9 +4,181 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Group1.MusicApp"
+        xmlns:views="clr-namespace:Group1.MusicApp.Views"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800" Loaded="Window_Loaded">
+        Title="Music App - Track Detail Demo"
+        Height="800" Width="1000"
+        Background="#1a1a1a"
+        Loaded="Window_Loaded"
+        TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+        TextElement.FontWeight="Regular"
+        TextElement.FontSize="13"
+        TextOptions.TextFormattingMode="Ideal"
+        TextOptions.TextRenderingMode="Auto"
+        FontFamily="{DynamicResource MaterialDesignFont}">
+
     <Grid>
-        <TextBox Name="txtResult" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" Height="300"/>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header with Search -->
+        <Border Grid.Row="0"
+                Background="#252525"
+                Padding="20"
+                BorderBrush="#333"
+                BorderThickness="0,0,0,1">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Logo/Title -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <materialDesign:PackIcon Kind="Music"
+                                            Width="32" Height="32"
+                                            Foreground="#1DB954"
+                                            VerticalAlignment="Center"
+                                            Margin="0,0,12,0"/>
+                    <TextBlock Text="Music App"
+                               FontSize="24"
+                               FontWeight="Bold"
+                               Foreground="White"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <!-- Search Box -->
+                <materialDesign:Card Grid.Column="1"
+                                    Margin="40,0"
+                                    Padding="0"
+                                    VerticalAlignment="Center">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBox x:Name="SearchBox"
+                                Grid.Column="0"
+                                materialDesign:HintAssist.Hint="Search for songs or artists..."
+                                materialDesign:TextFieldAssist.HasClearButton="True"
+                                FontSize="16"
+                                Padding="16,12"
+                                BorderThickness="0"
+                                KeyDown="SearchBox_KeyDown"/>
+
+                        <Button Grid.Column="1"
+                                Style="{StaticResource MaterialDesignFlatButton}"
+                                Click="SearchButton_Click"
+                                Width="50" Height="50">
+                            <materialDesign:PackIcon Kind="Magnify"
+                                                    Width="24" Height="24"/>
+                        </Button>
+                    </Grid>
+                </materialDesign:Card>
+
+                <!-- Status -->
+                <TextBlock x:Name="StatusText"
+                           Grid.Column="2"
+                           Text="Ready"
+                           Foreground="Gray"
+                           FontSize="14"
+                           VerticalAlignment="Center"
+                           Margin="20,0,0,0"/>
+            </Grid>
+        </Border>
+
+        <!-- Main Content Area -->
+        <Grid Grid.Row="1">
+            <!-- Search Results List (Left Side) -->
+            <Border x:Name="SearchResultsPanel"
+                    Width="300"
+                    HorizontalAlignment="Left"
+                    Background="#1e1e1e"
+                    BorderBrush="#333"
+                    BorderThickness="0,0,1,0"
+                    Visibility="Collapsed">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Text="Search Results"
+                               Grid.Row="0"
+                               FontSize="18"
+                               FontWeight="SemiBold"
+                               Foreground="White"
+                               Margin="20,20,20,16"/>
+
+                    <ListBox x:Name="SearchResultsList"
+                             Grid.Row="1"
+                             Background="Transparent"
+                             BorderThickness="0"
+                             SelectionChanged="SearchResultsList_SelectionChanged">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="0,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="60"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <Border Grid.Column="0"
+                                            Width="50" Height="50"
+                                            CornerRadius="4"
+                                            ClipToBounds="True">
+                                        <Image Source="{Binding AlbumImageUrl}"
+                                               Stretch="UniformToFill"/>
+                                    </Border>
+
+                                    <StackPanel Grid.Column="1"
+                                                VerticalAlignment="Center"
+                                                Margin="12,0,0,0">
+                                        <TextBlock Text="{Binding Name}"
+                                                   FontSize="14"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="White"
+                                                   TextTrimming="CharacterEllipsis"/>
+                                        <TextBlock Text="{Binding ArtistName}"
+                                                   FontSize="12"
+                                                   Foreground="Gray"
+                                                   TextTrimming="CharacterEllipsis"/>
+                                    </StackPanel>
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </Grid>
+            </Border>
+
+            <!-- Track Detail View (Main Area) -->
+            <views:TrackDetailView x:Name="TrackDetailView"
+                                   Visibility="Collapsed"/>
+
+            <!-- Welcome Message (Default) -->
+            <StackPanel x:Name="WelcomePanel"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center">
+                <materialDesign:PackIcon Kind="MusicNoteOutline"
+                                        Width="120" Height="120"
+                                        Foreground="#333"
+                                        HorizontalAlignment="Center"
+                                        Margin="0,0,0,24"/>
+                <TextBlock Text="Search for a track to get started"
+                           FontSize="24"
+                           Foreground="Gray"
+                           HorizontalAlignment="Center"
+                           Margin="0,0,0,12"/>
+                <TextBlock Text="Try searching for your favorite artist or song"
+                           FontSize="16"
+                           Foreground="#555"
+                           HorizontalAlignment="Center"/>
+            </StackPanel>
+        </Grid>
     </Grid>
 </Window>
