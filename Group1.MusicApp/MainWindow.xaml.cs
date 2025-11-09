@@ -132,7 +132,7 @@ namespace Group1.MusicApp
                     var fullTrackDetails = await _viewModel.GetTrackDetailsAsync(selectedTrack.Id);
 
                     // Show track detail view
-                    TrackDetailView.Visibility = Visibility.Visible;
+                    ShowTrackDetailView();
                     TrackDetailView.LoadTrack(fullTrackDetails);
 
                     StatusText.Text = "Track loaded";
@@ -142,6 +142,74 @@ namespace Group1.MusicApp
                     MessageBox.Show($"Failed to load track details: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                     StatusText.Text = "Failed to load track";
                 }
+            }
+        }
+
+        /// <summary>
+        /// Handle Playlist button click
+        /// </summary>
+        private void PlaylistButton_Click(object sender, RoutedEventArgs e)
+        {
+            ShowPlaylistView();
+        }
+
+        /// <summary>
+        /// Show playlist view and hide other views
+        /// </summary>
+        private void ShowPlaylistView()
+        {
+            PlaylistView.Visibility = Visibility.Visible;
+            PlaylistView.Refresh();
+            TrackDetailView.Visibility = Visibility.Collapsed;
+            WelcomePanel.Visibility = Visibility.Collapsed;
+            SearchResultsPanel.Visibility = Visibility.Collapsed;
+            StatusText.Text = "My Playlist";
+        }
+
+        /// <summary>
+        /// Show track detail view and hide other views
+        /// </summary>
+        private void ShowTrackDetailView()
+        {
+            TrackDetailView.Visibility = Visibility.Visible;
+            PlaylistView.Visibility = Visibility.Collapsed;
+            WelcomePanel.Visibility = Visibility.Collapsed;
+        }
+
+        /// <summary>
+        /// Handle track added to playlist event
+        /// </summary>
+        private void TrackDetailView_TrackAddedToPlaylist(object? sender, Track track)
+        {
+            // Refresh playlist view if it's visible
+            if (PlaylistView.Visibility == Visibility.Visible)
+            {
+                PlaylistView.Refresh();
+            }
+        }
+
+        /// <summary>
+        /// Handle track play request from playlist
+        /// </summary>
+        private async void PlaylistView_TrackPlayRequested(object? sender, string trackId)
+        {
+            try
+            {
+                StatusText.Text = "Loading track...";
+
+                // Fetch full track details with audio features
+                var fullTrackDetails = await _viewModel.GetTrackDetailsAsync(trackId);
+
+                // Show track detail view
+                ShowTrackDetailView();
+                TrackDetailView.LoadTrack(fullTrackDetails);
+
+                StatusText.Text = "Track loaded";
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to load track: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                StatusText.Text = "Failed to load track";
             }
         }
     }

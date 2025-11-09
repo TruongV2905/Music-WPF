@@ -206,11 +206,15 @@
                                     </StackPanel>
                                 </Button>
 
-                                <Button Style="{StaticResource MaterialDesignRaisedButton}"
+                                <Button x:Name="AddToPlaylistButton"
+                                        Style="{StaticResource MaterialDesignRaisedButton}"
                                         materialDesign:ButtonAssist.CornerRadius="20"
                                         Height="40"
-                                        Margin="0,0,12,0">
-                                    <materialDesign:PackIcon Kind="HeartOutline"
+                                        Margin="0,0,12,0"
+                                        Click="AddToPlaylistButton_Click"
+                                        ToolTip="Add to Playlist">
+                                    <materialDesign:PackIcon x:Name="AddToPlaylistIcon"
+                                                            Kind="PlaylistPlus"
                                                             Width="20" Height="20"/>
                                 </Button>
 

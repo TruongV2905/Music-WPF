@@ -49,6 +49,21 @@
                                FontWeight="Bold"
                                Foreground="White"
                                VerticalAlignment="Center"/>
+                    <Button x:Name="PlaylistButton"
+                            Style="{StaticResource MaterialDesignFlatButton}"
+                            Margin="20,0,0,0"
+                            Click="PlaylistButton_Click"
+                            ToolTip="View Playlist">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="PlaylistMusic"
+                                                    Width="20" Height="20"
+                                                    Foreground="White"
+                                                    Margin="0,0,8,0"/>
+                            <TextBlock Text="Playlist"
+                                       Foreground="White"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
                 </StackPanel>
 
                 <!-- Search Box -->
@@ -158,7 +173,13 @@
 
             <!-- Track Detail View (Main Area) -->
             <views:TrackDetailView x:Name="TrackDetailView"
-                                   Visibility="Collapsed"/>
+                                   Visibility="Collapsed"
+                                   TrackAddedToPlaylist="TrackDetailView_TrackAddedToPlaylist"/>
+
+            <!-- Playlist View -->
+            <views:PlaylistView x:Name="PlaylistView"
+                               Visibility="Collapsed"
+                               TrackPlayRequested="PlaylistView_TrackPlayRequested"/>
 
             <!-- Welcome Message (Default) -->
             <StackPanel x:Name="WelcomePanel"

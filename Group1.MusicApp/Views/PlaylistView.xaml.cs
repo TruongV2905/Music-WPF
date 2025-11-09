@@ -1,0 +1,145 @@
+using System;
+using System.Windows;
+using System.Windows.Controls;
+using Group1.MusicApp.Models;
+using Group1.MusicApp.ViewModels;
+
+namespace Group1.MusicApp.Views
+{
+    // UserControl để hiển thị danh sách playlist
+    public partial class PlaylistView : UserControl
+    {
+        private PlaylistViewModel viewModel;  // ViewModel chứa dữ liệu
+
+        // Event để thông báo khi muốn phát bài hát
+        public event EventHandler<string> TrackPlayRequested;
+
+        // Constructor - khởi tạo
+        public PlaylistView()
+        {
+            InitializeComponent();
+            
+            // Tạo ViewModel mới
+            viewModel = new PlaylistViewModel();
+            
+            // Gán dữ liệu cho ListBox
+            PlaylistItemsControl.ItemsSource = viewModel.PlaylistItems;
+            
+            // Cập nhật giao diện
+            UpdateTrackCount();
+            UpdateEmptyState();
+        }
+
+        // Hàm làm mới danh sách playlist
+        public void Refresh()
+        {
+            viewModel.LoadPlaylist();
+            PlaylistItemsControl.ItemsSource = viewModel.PlaylistItems;
+            UpdateTrackCount();
+            UpdateEmptyState();
+        }
+
+        // Hàm thêm bài hát vào playlist
+        public bool AddTrack(Track track)
+        {
+            bool result = viewModel.AddTrack(track);
+            if (result)
+            {
+                PlaylistItemsControl.ItemsSource = viewModel.PlaylistItems;
+                UpdateTrackCount();
+                UpdateEmptyState();
+            }
+            return result;
+        }
+
+        // Hàm kiểm tra bài hát có trong playlist không
+        public bool IsTrackInPlaylist(string trackId)
+        {
+            return viewModel.IsTrackInPlaylist(trackId);
+        }
+
+        // Hàm cập nhật số lượng bài hát hiển thị
+        private void UpdateTrackCount()
+        {
+            int count = viewModel.GetTrackCount();
+            if (count == 1)
+            {
+                TrackCountText.Text = count + " bài hát";
+            }
+            else
+            {
+                TrackCountText.Text = count + " bài hát";
+            }
+        }
+
+        // Hàm cập nhật trạng thái khi playlist rỗng
+        private void UpdateEmptyState()
+        {
+            if (viewModel.PlaylistItems.Count == 0)
+            {
+                // Hiển thị thông báo playlist rỗng
+                EmptyStatePanel.Visibility = Visibility.Visible;
+                PlaylistItemsControl.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                // Ẩn thông báo, hiển thị danh sách
+                EmptyStatePanel.Visibility = Visibility.Collapsed;
+                PlaylistItemsControl.Visibility = Visibility.Visible;
+            }
+        }
+
+        // Hàm xử lý khi click nút Play
+        private void PlayButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Lấy button được click
+            Button button = sender as Button;
+            if (button != null)
+            {
+                // Lấy PlaylistItem từ Tag
+                PlaylistItem item = button.Tag as PlaylistItem;
+                if (item != null)
+                {
+                    // Gửi event để phát bài hát
+                    if (TrackPlayRequested != null)
+                    {
+                        TrackPlayRequested(this, item.TrackId);
+                    }
+                }
+            }
+        }
+
+        // Hàm xử lý khi click nút Delete
+        private void DeleteButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Lấy button được click
+            Button button = sender as Button;
+            if (button != null)
+            {
+                // Lấy TrackId từ Tag
+                string trackId = button.Tag as string;
+                if (trackId != null)
+                {
+                    // Hỏi xác nhận trước khi xóa
+                    MessageBoxResult result = MessageBox.Show(
+                        "Bạn có chắc muốn xóa bài hát này khỏi playlist?",
+                        "Xóa bài hát",
+                        MessageBoxButton.YesNo,
+                        MessageBoxImage.Question);
+
+                    if (result == MessageBoxResult.Yes)
+                    {
+                        // Xóa bài hát
+                        viewModel.RemoveTrack(trackId);
+                        
+                        // Cập nhật lại danh sách
+                        PlaylistItemsControl.ItemsSource = viewModel.PlaylistItems;
+                        UpdateTrackCount();
+                        UpdateEmptyState();
+                    }
+                }
+            }
+        }
+    }
+}
+
