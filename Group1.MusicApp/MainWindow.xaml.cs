@@ -153,12 +153,20 @@ namespace Group1.MusicApp
         /// </summary>
         private void lstPlaylist_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
-            if (lstPlaylist.SelectedItem is System.Windows.Controls.ListBoxItem selectedItem)
+            if (lstPlaylist?.SelectedItem is System.Windows.Controls.ListBoxItem selectedItem)
             {
-                string content = selectedItem.Content?.ToString() ?? "";
-                if (content.Contains("Favorites"))
+                string? content = selectedItem.Content?.ToString() ?? "";
+                
+                // Xử lý khi chọn "My Playlist"
+                if (content.Contains("My Playlist") || content.Contains("Playlist"))
                 {
                     ShowPlaylistView();
+                }
+                // Có thể thêm các xử lý khác cho Favorites, Recently Played, AI Mood Mix ở đây
+                else if (content.Contains("Favorites"))
+                {
+                    // TODO: Xử lý Favorites nếu cần
+                    ShowPlaylistView(); // Tạm thời dùng PlaylistView
                 }
             }
         }
@@ -233,6 +241,33 @@ namespace Group1.MusicApp
                 MessageBox.Show($"Failed to load track: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 if (StatusText != null) StatusText.Text = "Failed to load track";
             }
+        }
+
+        /// <summary>
+        /// Handle close playlist request
+        /// </summary>
+        private void PlaylistView_CloseRequested(object? sender, EventArgs e)
+        {
+            // Ẩn PlaylistView
+            if (PlaylistView != null) PlaylistView.Visibility = Visibility.Collapsed;
+
+            // Hiển thị lại WelcomePanel hoặc SearchResultsPanel
+            if (SearchResultsPanel != null && SearchResultsPanel.Visibility == Visibility.Visible)
+            {
+                // Nếu đang có kết quả tìm kiếm, giữ nguyên
+                return;
+            }
+            else
+            {
+                // Nếu không có kết quả tìm kiếm, hiển thị WelcomePanel
+                if (WelcomePanel != null) WelcomePanel.Visibility = Visibility.Visible;
+            }
+
+            // Cập nhật status
+            if (StatusText != null) StatusText.Text = "Ready - Search for music!";
+
+            // Bỏ chọn trong sidebar
+            if (lstPlaylist != null) lstPlaylist.SelectedItem = null;
         }
     }
 }

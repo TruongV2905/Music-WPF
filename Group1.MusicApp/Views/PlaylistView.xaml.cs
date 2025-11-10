@@ -14,6 +14,9 @@ namespace Group1.MusicApp.Views
         // Event để thông báo khi muốn phát bài hát
         public event EventHandler<string> TrackPlayRequested;
 
+        // Event để thông báo khi muốn đóng PlaylistView
+        public event EventHandler? CloseRequested;
+
         // Constructor - khởi tạo
         public PlaylistView()
         {
@@ -136,6 +139,13 @@ namespace Group1.MusicApp.Views
                     }
                 }
             }
+        }
+
+        // Hàm xử lý khi click nút đóng
+        private void CloseButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Gửi event để đóng PlaylistView
+            CloseRequested?.Invoke(this, EventArgs.Empty);
         }
     }
 }

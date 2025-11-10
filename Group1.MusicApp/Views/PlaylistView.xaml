@@ -42,6 +42,7 @@
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
@@ -62,7 +63,21 @@
                            Text="0 bài hát"
                            FontSize="14"
                            Foreground="Gray"
-                           VerticalAlignment="Center"/>
+                           VerticalAlignment="Center"
+                           Margin="0,0,16,0"/>
+
+                <!-- Nút đóng -->
+                <Button x:Name="CloseButton"
+                        Grid.Column="3"
+                        Style="{StaticResource MaterialDesignIconButton}"
+                        Click="CloseButton_Click"
+                        ToolTip="Đóng Playlist"
+                        Width="32" Height="32"
+                        Padding="0">
+                    <materialDesign:PackIcon Kind="Close"
+                                            Width="20" Height="20"
+                                            Foreground="Gray"/>
+                </Button>
             </Grid>
         </Border>
 

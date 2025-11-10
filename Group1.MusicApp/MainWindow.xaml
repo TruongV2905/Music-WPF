@@ -49,6 +49,7 @@
                          Margin="15,0,0,0"
                          Cursor="Hand"
                          SelectionChanged="lstPlaylist_SelectionChanged">
+                    <ListBoxItem Content="📋  My Playlist" Margin="0,5"/>
                     <ListBoxItem Content="❤️  Favorites" Margin="0,5"/>
                     <ListBoxItem Content="🕒  Recently Played" Margin="0,5"/>
                     <ListBoxItem Content="🤖  AI Mood Mix" Margin="0,5"/>
@@ -157,7 +158,8 @@
                 <!-- Playlist View -->
                 <views:PlaylistView x:Name="PlaylistView"
                                    Visibility="Collapsed"
-                                   TrackPlayRequested="PlaylistView_TrackPlayRequested" />
+                                   TrackPlayRequested="PlaylistView_TrackPlayRequested"
+                                   CloseRequested="PlaylistView_CloseRequested" />
 
                 <!-- Track Detail View -->
                 <views:TrackDetailView x:Name="TrackDetailView"
