@@ -3,10 +3,380 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:Group1.MusicApp"
+<<<<<<< HEAD
+        xmlns:materialDesign="clr-namespace:MaterialDesignThemes.Wpf;assembly=MaterialDesignThemes.Wpf"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800" Loaded="Window_Loaded">
+        Title="🎧 Music Player"
+        Height="744"
+        Width="1100"
+        WindowStartupLocation="CenterScreen"
+        Background="#0B0B0B"
+        Loaded="Window_Loaded">
+
     <Grid>
-        <TextBox Name="txtResult" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" Height="300"/>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="250"/>
+            <!-- Sidebar -->
+            <ColumnDefinition Width="*"/>
+            <!-- Main View -->
+        </Grid.ColumnDefinitions>
+
+        <!-- 🌙 Sidebar -->
+        <DockPanel Grid.Column="0">
+            <DockPanel.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                    <GradientStop Color="#1E1E1E" Offset="0" />
+                    <GradientStop Color="#121212" Offset="1" />
+                </LinearGradientBrush>
+            </DockPanel.Background>
+
+            <StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="15,25,0,30">
+                    <TextBlock Text="🎵"
+                               FontSize="28"
+                               Foreground="#1DB954"
+                               Margin="0,0,10,0"/>
+                    <TextBlock Text="My Playlist"
+                               FontSize="24"
+                               FontWeight="Bold"
+                               Foreground="#1DB954"/>
+                </StackPanel>
+
+                <ListBox x:Name="lstPlaylist"
+                         Background="Transparent"
+                         Foreground="#F5F5F5"
+                         BorderThickness="0"
+                         FontSize="16"
+                         Margin="15,0,0,0"
+                         Cursor="Hand">
+                    <ListBoxItem Content="❤️  Favorites" Margin="0,5"/>
+                    <ListBoxItem Content="🕒  Recently Played" Margin="0,5"/>
+                    <ListBoxItem Content="🤖  AI Mood Mix" Margin="0,5"/>
+                </ListBox>
+            </StackPanel>
+        </DockPanel>
+
+        <!-- 🌟 Main View -->
+        <Grid Grid.Column="1" Margin="20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <!-- Search -->
+                <RowDefinition Height="*"/>
+                <!-- List -->
+                <RowDefinition Height="Auto"/>
+                <!-- Now Playing -->
+                <RowDefinition Height="Auto"/>
+                <!-- Lyrics Playing -->
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- 🔍 Search bar -->
+            <DockPanel Grid.Row="0" Margin="0,0,0,20">
+                <TextBox x:Name="txtSearch"
+                         Width="500"
+                         Height="45"
+                         FontSize="16"
+                         materialDesign:HintAssist.Hint="Tìm bài hát hoặc ca sĩ..."
+                         Style="{DynamicResource MaterialDesignFilledTextBox}"
+                         Margin="0,0,15,0"
+                         Foreground="#FFF"
+                         Background="#181818"
+                         BorderBrush="#333" />
+                <Button x:Name="btnSearch"
+                        Content="Tìm kiếm"
+                        Width="100"
+                        Background="#1DB954"
+                        Foreground="White"
+                        FontWeight="Bold"
+                        Cursor="Hand"
+                        Style="{DynamicResource MaterialDesignRaisedButton}" Click="btnSearch_Click">
+                    <Button.Effect>
+                        <DropShadowEffect BlurRadius="15" Color="#1DB954" ShadowDepth="0" />
+                    </Button.Effect>
+                </Button>
+            </DockPanel>
+
+            <!-- 🎵 Danh sách bài hát -->
+            <Border Grid.Row="1" Background="#121212" CornerRadius="10" Padding="10">
+                <ListView x:Name="lstTracks"
+              Foreground="White"
+              Background="#181818"
+              BorderThickness="0"
+              SelectionChanged="lstTracks_SelectionChanged"
+              ScrollViewer.VerticalScrollBarVisibility="Auto">
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal" Margin="5">
+                                <Image Source="{Binding ImageUrl}"
+                           Width="60" Height="60"
+                           Margin="0,0,10,0"
+                           Stretch="UniformToFill"
+                           VerticalAlignment="Center"
+                           ClipToBounds="True"/>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="14" />
+                                    <TextBlock Text="{Binding Artist}" FontSize="12" Foreground="Gray"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </Border>
+            <!-- 🎧 Media player ẩn để phát nhạc -->
+            <MediaElement x:Name="mediaPlayer"
+              LoadedBehavior="Manual"
+              UnloadedBehavior="Stop"
+              Volume="0.8"
+              Visibility="Collapsed"/>
+
+            <!-- ▶ Now Playing -->
+            <Border Grid.Row="2"
+                    Background="#181818"
+                    CornerRadius="15"
+                    Padding="20"
+                    Margin="0,15,0,0"
+                    Effect="{DynamicResource ShadowEffect}">
+                <DockPanel>
+                    <Image x:Name="imgCover"
+                           Width="90"
+                           Height="90"
+                           Stretch="UniformToFill"
+                           DockPanel.Dock="Left"
+                           Margin="0,0,15,0"
+                          />
+                    <StackPanel DockPanel.Dock="Left" VerticalAlignment="Center">
+                        <TextBlock x:Name="lblNowPlaying"
+                                   Text="Chưa chọn bài"
+                                   Foreground="White"
+                                   FontSize="20"
+                                   FontWeight="Bold"/>
+                        <TextBlock x:Name="lblArtist"
+                                   Text=""
+                                   Foreground="#A0A0A0"
+                                   FontSize="14"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button Content="⏮️" Width="50" Height="50" Margin="10,0" Background="#222" Foreground="White" BorderBrush="Transparent" Cursor="Hand"/>
+                        <Button Content="⏯️" Width="50" Height="50" Margin="10,0" Background="#1DB954" Foreground="White" BorderBrush="Transparent" Cursor="Hand" Click="Button_Click"/>
+                        <Button Content="⏭️" Width="50" Height="50" Margin="10,0" Background="#222" Foreground="White" BorderBrush="Transparent" Cursor="Hand"/>
+                        <Button Content="💖" Width="50" Height="50" Margin="10,0" Background="#222" Foreground="#1DB954" BorderBrush="Transparent" Cursor="Hand"/>
+                    </StackPanel>
+                </DockPanel>
+            </Border>
+            <!-- 🎤 Lyrics -->
+            <Border Grid.Row="3" 
+        Background="#101010"
+        CornerRadius="10"
+        Padding="15"
+        Margin="0,15,0,0">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <TextBlock x:Name="txtLyrics"
+                   Foreground="White"
+                   FontSize="14"
+                   TextWrapping="Wrap"
+                   LineHeight="24"
+                   Text="🎶 Chưa có lời bài hát..." Height="76"
+                   />
+                </ScrollViewer>
+            </Border>
+=======
+        xmlns:local="clr-namespace:Group1.MusicApp"
+        xmlns:views="clr-namespace:Group1.MusicApp.Views"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        mc:Ignorable="d"
+        Title="Music App - Track Detail Demo"
+        Height="800" Width="1000"
+        Background="#1a1a1a"
+        Loaded="Window_Loaded"
+        TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+        TextElement.FontWeight="Regular"
+        TextElement.FontSize="13"
+        TextOptions.TextFormattingMode="Ideal"
+        TextOptions.TextRenderingMode="Auto"
+        FontFamily="{DynamicResource MaterialDesignFont}">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header with Search -->
+        <Border Grid.Row="0"
+                Background="#252525"
+                Padding="20"
+                BorderBrush="#333"
+                BorderThickness="0,0,0,1">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Logo/Title -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <materialDesign:PackIcon Kind="Music"
+                                            Width="32" Height="32"
+                                            Foreground="#1DB954"
+                                            VerticalAlignment="Center"
+                                            Margin="0,0,12,0"/>
+                    <TextBlock Text="Music App"
+                               FontSize="24"
+                               FontWeight="Bold"
+                               Foreground="White"
+                               VerticalAlignment="Center"/>
+                    <Button x:Name="PlaylistButton"
+                            Style="{StaticResource MaterialDesignFlatButton}"
+                            Margin="20,0,0,0"
+                            Click="PlaylistButton_Click"
+                            ToolTip="View Playlist">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="PlaylistMusic"
+                                                    Width="20" Height="20"
+                                                    Foreground="White"
+                                                    Margin="0,0,8,0"/>
+                            <TextBlock Text="Playlist"
+                                       Foreground="White"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+
+                <!-- Search Box -->
+                <materialDesign:Card Grid.Column="1"
+                                    Margin="40,0"
+                                    Padding="0"
+                                    VerticalAlignment="Center">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBox x:Name="SearchBox"
+                                Grid.Column="0"
+                                materialDesign:HintAssist.Hint="Search for songs or artists..."
+                                materialDesign:TextFieldAssist.HasClearButton="True"
+                                FontSize="16"
+                                Padding="16,12"
+                                BorderThickness="0"
+                                KeyDown="SearchBox_KeyDown"/>
+
+                        <Button Grid.Column="1"
+                                Style="{StaticResource MaterialDesignFlatButton}"
+                                Click="SearchButton_Click"
+                                Width="50" Height="50">
+                            <materialDesign:PackIcon Kind="Magnify"
+                                                    Width="24" Height="24"/>
+                        </Button>
+                    </Grid>
+                </materialDesign:Card>
+
+                <!-- Status -->
+                <TextBlock x:Name="StatusText"
+                           Grid.Column="2"
+                           Text="Ready"
+                           Foreground="Gray"
+                           FontSize="14"
+                           VerticalAlignment="Center"
+                           Margin="20,0,0,0"/>
+            </Grid>
+        </Border>
+
+        <!-- Main Content Area -->
+        <Grid Grid.Row="1">
+            <!-- Search Results List (Left Side) -->
+            <Border x:Name="SearchResultsPanel"
+                    Width="300"
+                    HorizontalAlignment="Left"
+                    Background="#1e1e1e"
+                    BorderBrush="#333"
+                    BorderThickness="0,0,1,0"
+                    Visibility="Collapsed">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Text="Search Results"
+                               Grid.Row="0"
+                               FontSize="18"
+                               FontWeight="SemiBold"
+                               Foreground="White"
+                               Margin="20,20,20,16"/>
+
+                    <ListBox x:Name="SearchResultsList"
+                             Grid.Row="1"
+                             Background="Transparent"
+                             BorderThickness="0"
+                             SelectionChanged="SearchResultsList_SelectionChanged">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="0,8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="60"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <Border Grid.Column="0"
+                                            Width="50" Height="50"
+                                            CornerRadius="4"
+                                            ClipToBounds="True">
+                                        <Image Source="{Binding AlbumImageUrl}"
+                                               Stretch="UniformToFill"/>
+                                    </Border>
+
+                                    <StackPanel Grid.Column="1"
+                                                VerticalAlignment="Center"
+                                                Margin="12,0,0,0">
+                                        <TextBlock Text="{Binding Name}"
+                                                   FontSize="14"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="White"
+                                                   TextTrimming="CharacterEllipsis"/>
+                                        <TextBlock Text="{Binding ArtistName}"
+                                                   FontSize="12"
+                                                   Foreground="Gray"
+                                                   TextTrimming="CharacterEllipsis"/>
+                                    </StackPanel>
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </Grid>
+            </Border>
+
+            <!-- Track Detail View (Main Area) -->
+            <views:TrackDetailView x:Name="TrackDetailView"
+                                   Visibility="Collapsed"
+                                   TrackAddedToPlaylist="TrackDetailView_TrackAddedToPlaylist"/>
+
+            <!-- Playlist View -->
+            <views:PlaylistView x:Name="PlaylistView"
+                               Visibility="Collapsed"
+                               TrackPlayRequested="PlaylistView_TrackPlayRequested"/>
+
+            <!-- Welcome Message (Default) -->
+            <StackPanel x:Name="WelcomePanel"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center">
+                <materialDesign:PackIcon Kind="MusicNoteOutline"
+                                        Width="120" Height="120"
+                                        Foreground="#333"
+                                        HorizontalAlignment="Center"
+                                        Margin="0,0,0,24"/>
+                <TextBlock Text="Search for a track to get started"
+                           FontSize="24"
+                           Foreground="Gray"
+                           HorizontalAlignment="Center"
+                           Margin="0,0,0,12"/>
+                <TextBlock Text="Try searching for your favorite artist or song"
+                           FontSize="16"
+                           Foreground="#555"
+                           HorizontalAlignment="Center"/>
+            </StackPanel>
+        </Grid>
     </Grid>
 </Window>
