@@ -8,3 +8,4 @@ appsettings.json
 appsettings.*.json
 secrets.json
 *.config
+/Group1.MusicApp/.env
