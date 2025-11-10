@@ -4,8 +4,6 @@ obj/
 
 # IMPORTANT: Ignore sensitive files with API keys
 .env
-appsettings.json
-appsettings.*.json
 secrets.json
 *.config
 /Group1.MusicApp/.env
