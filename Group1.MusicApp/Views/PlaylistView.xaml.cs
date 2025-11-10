@@ -93,18 +93,15 @@ namespace Group1.MusicApp.Views
         private void PlayButton_Click(object sender, RoutedEventArgs e)
         {
             // Lấy button được click
-            Button button = sender as Button;
+            Button? button = sender as Button;
             if (button != null)
             {
                 // Lấy PlaylistItem từ Tag
-                PlaylistItem item = button.Tag as PlaylistItem;
-                if (item != null)
+                PlaylistItem? item = button.Tag as PlaylistItem;
+                if (item != null && !string.IsNullOrEmpty(item.TrackId))
                 {
                     // Gửi event để phát bài hát
-                    if (TrackPlayRequested != null)
-                    {
-                        TrackPlayRequested(this, item.TrackId);
-                    }
+                    TrackPlayRequested?.Invoke(this, item.TrackId);
                 }
             }
         }
@@ -113,12 +110,12 @@ namespace Group1.MusicApp.Views
         private void DeleteButton_Click(object sender, RoutedEventArgs e)
         {
             // Lấy button được click
-            Button button = sender as Button;
+            Button? button = sender as Button;
             if (button != null)
             {
                 // Lấy TrackId từ Tag
-                string trackId = button.Tag as string;
-                if (trackId != null)
+                string? trackId = button.Tag as string;
+                if (!string.IsNullOrEmpty(trackId))
                 {
                     // Hỏi xác nhận trước khi xóa
                     MessageBoxResult result = MessageBox.Show(

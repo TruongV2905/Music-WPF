@@ -209,8 +209,8 @@ namespace Group1.MusicApp.Services
                 command.Parameters.AddWithValue("@TrackId", trackId);
 
                 // Thực thi và lấy kết quả
-                object result = command.ExecuteScalar();
-                int count = Convert.ToInt32(result);
+                object? result = command.ExecuteScalar();
+                int count = result != null ? Convert.ToInt32(result) : 0;
                 
                 // Đóng kết nối
                 connection.Close();
@@ -238,8 +238,8 @@ namespace Group1.MusicApp.Services
                 command.CommandText = "SELECT COUNT(*) FROM PlaylistItems";
 
                 // Thực thi và lấy kết quả
-                object result = command.ExecuteScalar();
-                int count = Convert.ToInt32(result);
+                object? result = command.ExecuteScalar();
+                int count = result != null ? Convert.ToInt32(result) : 0;
                 
                 // Đóng kết nối
                 connection.Close();
