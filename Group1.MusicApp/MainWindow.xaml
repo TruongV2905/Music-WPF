@@ -73,7 +73,8 @@
                          Margin="0,0,15,0"
                          Foreground="#FFF"
                          Background="#181818"
-                         BorderBrush="#333" />
+                         BorderBrush="#333" 
+                         KeyDown="txtSearch_KeyDown" />
                 <Button x:Name="btnSearch"
                         Content="Tìm kiếm"
                         Width="100"
@@ -100,15 +101,15 @@
                     <ListView.ItemTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal" Margin="5">
-                                <Image Source="{Binding ImageUrl}"
+                                <Image Source="{Binding AlbumImageUrl}"
                                        Width="60" Height="60"
                                        Margin="0,0,10,0"
                                        Stretch="UniformToFill"
                                        VerticalAlignment="Center"
                                        ClipToBounds="True"/>
                                 <StackPanel VerticalAlignment="Center">
-                                    <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="14" />
-                                    <TextBlock Text="{Binding Artist}" FontSize="12" Foreground="Gray"/>
+                                    <TextBlock Text="{Binding AlbumName}" FontWeight="Bold" FontSize="14" />
+                                    <TextBlock Text="{Binding ArtistName}" FontSize="12" Foreground="Gray"/>
                                 </StackPanel>
                             </StackPanel>
                         </DataTemplate>
