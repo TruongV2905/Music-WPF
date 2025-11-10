@@ -1,3 +1,9 @@
 .vs/
 bin/
 obj/
+
+# IMPORTANT: Ignore sensitive files with API keys
+.env
+secrets.json
+*.config
+/Group1.MusicApp/.env

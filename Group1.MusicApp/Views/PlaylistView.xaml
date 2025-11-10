@@ -1,0 +1,204 @@
+<UserControl x:Class="Group1.MusicApp.Views.PlaylistView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:models="clr-namespace:Group1.MusicApp.Models"
+             mc:Ignorable="d"
+             d:DesignHeight="700" d:DesignWidth="900"
+             Background="#1a1a1a">
+
+    <UserControl.Resources>
+        <Style x:Key="PlaylistItemStyle" TargetType="Border">
+            <Setter Property="Background" Value="#252525"/>
+            <Setter Property="BorderBrush" Value="#333"/>
+            <Setter Property="BorderThickness" Value="0,0,0,1"/>
+            <Setter Property="Padding" Value="16"/>
+            <Setter Property="Margin" Value="0"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#2a2a2a"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Border Grid.Row="0"
+                Background="#252525"
+                Padding="24"
+                BorderBrush="#333"
+                BorderThickness="0,0,0,1">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <materialDesign:PackIcon Kind="PlaylistMusic"
+                                            Width="32" Height="32"
+                                            Foreground="#1DB954"
+                                            VerticalAlignment="Center"
+                                            Margin="0,0,12,0"/>
+                    <TextBlock Text="Playlist của tôi"
+                               FontSize="24"
+                               FontWeight="Bold"
+                               Foreground="White"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <TextBlock x:Name="TrackCountText"
+                           Grid.Column="2"
+                           Text="0 bài hát"
+                           FontSize="14"
+                           Foreground="Gray"
+                           VerticalAlignment="Center"/>
+            </Grid>
+        </Border>
+
+        <!-- Playlist Items -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <ItemsControl x:Name="PlaylistItemsControl">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="{x:Type models:PlaylistItem}">
+                        <Border Style="{StaticResource PlaylistItemStyle}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="60"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Album Image -->
+                                <Border Grid.Column="0"
+                                        Width="50" Height="50"
+                                        CornerRadius="4"
+                                        ClipToBounds="True"
+                                        Background="#333">
+                                    <Image Stretch="UniformToFill">
+                                        <Image.Source>
+                                            <Binding Path="AlbumImageUrl">
+                                                <Binding.TargetNullValue>
+                                                    <ImageSource>
+                                                        <DrawingImage>
+                                                            <DrawingImage.Drawing>
+                                                                <GeometryDrawing Brush="#333">
+                                                                    <GeometryDrawing.Geometry>
+                                                                        <RectangleGeometry Rect="0,0,50,50"/>
+                                                                    </GeometryDrawing.Geometry>
+                                                                </GeometryDrawing>
+                                                            </DrawingImage.Drawing>
+                                                        </DrawingImage>
+                                                    </ImageSource>
+                                                </Binding.TargetNullValue>
+                                            </Binding>
+                                        </Image.Source>
+                                    </Image>
+                                </Border>
+
+                                <!-- Track Info -->
+                                <StackPanel Grid.Column="1"
+                                            VerticalAlignment="Center"
+                                            Margin="16,0,0,0">
+                                    <TextBlock Text="{Binding TrackName}"
+                                               FontSize="16"
+                                               FontWeight="SemiBold"
+                                               Foreground="White"
+                                               TextTrimming="CharacterEllipsis"/>
+                                    <TextBlock Text="{Binding ArtistName}"
+                                               FontSize="14"
+                                               Foreground="Gray"
+                                               TextTrimming="CharacterEllipsis"
+                                               Margin="0,4,0,0"/>
+                                    <TextBlock Text="{Binding AddedDateText}"
+                                               FontSize="12"
+                                               Foreground="#666"
+                                               Margin="0,4,0,0"/>
+                                </StackPanel>
+
+                                <!-- Duration -->
+                                <TextBlock Grid.Column="2"
+                                           Text="{Binding Duration}"
+                                           FontSize="14"
+                                           Foreground="Gray"
+                                           VerticalAlignment="Center"
+                                           Margin="16,0"/>
+
+                                <!-- Nút Play -->
+                                <Button Grid.Column="3"
+                                        Style="{StaticResource MaterialDesignIconButton}"
+                                        Click="PlayButton_Click"
+                                        Tag="{Binding}"
+                                        ToolTip="Phát bài hát"
+                                        Margin="8,0">
+                                    <materialDesign:PackIcon Kind="Play"
+                                                            Width="24" Height="24"
+                                                            Foreground="#1DB954"/>
+                                </Button>
+
+                                <!-- Nút Xóa -->
+                                <Button Grid.Column="4"
+                                        Style="{StaticResource MaterialDesignIconButton}"
+                                        Click="DeleteButton_Click"
+                                        Tag="{Binding TrackId}"
+                                        ToolTip="Xóa khỏi playlist"
+                                        Margin="8,0">
+                                    <materialDesign:PackIcon Kind="Delete"
+                                                            Width="24" Height="24"
+                                                            Foreground="#ff4444"/>
+                                </Button>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+
+        <!-- Empty State -->
+        <StackPanel x:Name="EmptyStatePanel"
+                    Grid.Row="1"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Visibility="Collapsed">
+            <materialDesign:PackIcon Kind="PlaylistMusic"
+                                    Width="120" Height="120"
+                                    Foreground="#333"
+                                    HorizontalAlignment="Center"
+                                    Margin="0,0,0,24"/>
+            <TextBlock Text="Playlist của bạn đang trống"
+                       FontSize="24"
+                       Foreground="Gray"
+                       HorizontalAlignment="Center"
+                       Margin="0,0,0,12"/>
+            <TextBlock Text="Thêm bài hát vào playlist để xem chúng ở đây"
+                       FontSize="16"
+                       Foreground="#555"
+                       HorizontalAlignment="Center"/>
+        </StackPanel>
+
+        <!-- Footer -->
+        <Border Grid.Row="2"
+                Background="#252525"
+                Padding="16"
+                BorderBrush="#333"
+                BorderThickness="0,1,0,0">
+            <TextBlock Text="Nhấn nút Play để phát bài hát"
+                       FontSize="12"
+                       Foreground="Gray"
+                       HorizontalAlignment="Center"/>
+        </Border>
+    </Grid>
+</UserControl>
+
