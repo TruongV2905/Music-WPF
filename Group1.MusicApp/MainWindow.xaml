@@ -110,12 +110,15 @@
                                 </Grid.ColumnDefinitions>
                                 
                                 <StackPanel Orientation="Horizontal" Grid.Column="0" Margin="5">
-                                    <Image Source="{Binding AlbumImageUrl}"
-                                           Width="60" Height="60"
+                                    <Image Width="60" Height="60"
                                            Margin="0,0,10,0"
                                            Stretch="UniformToFill"
                                            VerticalAlignment="Center"
-                                           ClipToBounds="True"/>
+                                           ClipToBounds="True">
+                                        <Image.Source>
+                                            <Binding Path="AlbumImageUrl"/>
+                                        </Image.Source>
+                                    </Image>
                                     <StackPanel VerticalAlignment="Center">
                                         <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="14" />
                                         <TextBlock Text="{Binding ArtistName}" FontSize="12" Foreground="Gray"/>

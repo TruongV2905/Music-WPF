@@ -12,7 +12,7 @@ namespace Group1.MusicApp.Views
         private PlaylistViewModel viewModel;  // ViewModel chứa dữ liệu
 
         // Event để thông báo khi muốn phát bài hát
-        public event EventHandler<string> TrackPlayRequested;
+        public event EventHandler<string>? TrackPlayRequested;
 
         // Event để thông báo khi muốn đóng PlaylistView
         public event EventHandler? CloseRequested;

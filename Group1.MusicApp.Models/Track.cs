@@ -45,3 +45,4 @@ namespace Group1.MusicApp.Models
         public int AcousticnessPercent => (int)(Acousticness * 100);
     }
 }
+

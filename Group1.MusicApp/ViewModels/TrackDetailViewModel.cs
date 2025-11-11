@@ -80,13 +80,30 @@ namespace Group1.MusicApp.ViewModels
         {
             try
             {
-                var searchJson = await _musicApi.SearchAsync(query, "track", limit);
-                return ParseTracksFromSearchJson(searchJson);
+                if (string.IsNullOrWhiteSpace(query))
+                {
+                    return new List<Track>();
+                }
+
+                // Spotify API có giới hạn limit tối đa là 50
+                int searchLimit = Math.Min(limit, 50); // Tối đa 50 (giới hạn của Spotify API)
+                
+                var searchJson = await _musicApi.SearchAsync(query, "track", searchLimit);
+                var allTracks = ParseTracksFromSearchJson(searchJson);
+                
+                // Trả về tất cả tracks đã parse (không giới hạn nữa vì đã lọc ở API level)
+                return allTracks;
             }
             catch (Exception ex)
             {
                 throw new Exception($"Search failed: {ex.Message}", ex);
             }
+        }
+
+        public async Task<List<Track>> SearchTracksAsync(string query, int limit = 10, int offset = 0)
+        {
+            var searchJson = await _musicApi.SearchAsync(query, "track", limit, offset);
+            return ParseTracksFromSearchJson(searchJson);
         }
 
         // ================== JSON Parsing Methods ==================
@@ -151,35 +168,94 @@ namespace Group1.MusicApp.ViewModels
             {
                 foreach (var item in items.EnumerateArray())
                 {
-                    var track = new Track
+                    try
                     {
-                        Id = item.GetProperty("id").GetString(),
-                        Name = item.GetProperty("name").GetString(),
-                        Popularity = item.GetProperty("popularity").GetInt32(),
-                        DurationMs = item.GetProperty("duration_ms").GetInt32()
-                    };
-
-                    // Album
-                    if (item.TryGetProperty("album", out var album))
-                    {
-                        track.AlbumName = album.GetProperty("name").GetString();
-
-                        if (album.TryGetProperty("images", out var images) && images.GetArrayLength() > 0)
+                        // Lấy preview_url - có thể null
+                        string? previewUrl = null;
+                        if (item.TryGetProperty("preview_url", out var previewUrlElement) && 
+                            previewUrlElement.ValueKind != JsonValueKind.Null)
                         {
-                            track.AlbumImageUrl = images[0].GetProperty("url").GetString();
+                            previewUrl = previewUrlElement.GetString();
+                        }
+
+                        // Lấy các thông tin cơ bản
+                        if (!item.TryGetProperty("id", out var idElement) || 
+                            !item.TryGetProperty("name", out var nameElement))
+                        {
+                            continue; // Bỏ qua nếu thiếu id hoặc name
+                        }
+
+                        var track = new Track
+                        {
+                            Id = idElement.GetString() ?? string.Empty,
+                            Name = nameElement.GetString() ?? "Unknown",
+                            Popularity = item.TryGetProperty("popularity", out var pop) ? pop.GetInt32() : 0,
+                            DurationMs = item.TryGetProperty("duration_ms", out var dur) ? dur.GetInt32() : 0,
+                            PreviewUrl = previewUrl,
+                            IsExplicit = item.TryGetProperty("explicit", out var explicitProp) ? explicitProp.GetBoolean() : false
+                        };
+
+                        // Album
+                        if (item.TryGetProperty("album", out var album))
+                        {
+                            if (album.TryGetProperty("name", out var albumName))
+                            {
+                                track.AlbumName = albumName.GetString() ?? string.Empty;
+                            }
+
+                            if (album.TryGetProperty("images", out var images) && images.GetArrayLength() > 0)
+                            {
+                                if (images[0].TryGetProperty("url", out var imageUrl))
+                                {
+                                    track.AlbumImageUrl = imageUrl.GetString() ?? string.Empty;
+                                }
+                            }
+
+                            // Release date
+                            if (album.TryGetProperty("release_date", out var releaseDate))
+                            {
+                                var dateStr = releaseDate.GetString();
+                                if (!string.IsNullOrEmpty(dateStr) && DateTime.TryParse(dateStr, out var date))
+                                {
+                                    track.ReleaseDate = date;
+                                }
+                            }
+                        }
+
+                        // Artists
+                        if (item.TryGetProperty("artists", out var artists) && artists.GetArrayLength() > 0)
+                        {
+                            var artistNames = new List<string>();
+                            foreach (var artist in artists.EnumerateArray())
+                            {
+                                if (artist.TryGetProperty("name", out var artistName))
+                                {
+                                    var name = artistName.GetString();
+                                    if (!string.IsNullOrEmpty(name))
+                                    {
+                                        artistNames.Add(name);
+                                    }
+                                }
+                            }
+                            track.ArtistName = artistNames.Count > 0 ? string.Join(", ", artistNames) : "Unknown Artist";
+                        }
+                        else
+                        {
+                            track.ArtistName = "Unknown Artist";
+                        }
+
+                        // Chỉ thêm track nếu có id hợp lệ
+                        if (!string.IsNullOrEmpty(track.Id))
+                        {
+                            tracks.Add(track);
                         }
                     }
-
-                    // Artists
-                    if (item.TryGetProperty("artists", out var artists) && artists.GetArrayLength() > 0)
+                    catch (Exception ex)
                     {
-                        var artistNames = artists.EnumerateArray()
-                            .Select(a => a.GetProperty("name").GetString())
-                            .ToList();
-                        track.ArtistName = string.Join(", ", artistNames);
+                        // Bỏ qua track lỗi và tiếp tục
+                        System.Diagnostics.Debug.WriteLine($"Error parsing track: {ex.Message}");
+                        continue;
                     }
-
-                    tracks.Add(track);
                 }
             }
 

@@ -12,3 +12,4 @@ namespace Group1.MusicApp.Models
         public int Followers { get; set; }
     }
 }
+

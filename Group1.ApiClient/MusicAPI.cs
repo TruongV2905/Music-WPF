@@ -75,10 +75,46 @@ namespace Group1.ApiClient
             var token = await GetAccessTokenAsync();
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-            var response = await _httpClient.GetAsync($"search?q={Uri.EscapeDataString(query)}&type={type}&limit={limit}");
-            response.EnsureSuccessStatusCode();
+            // Giới hạn limit tối đa là 50 theo Spotify API
+            int actualLimit = Math.Min(limit, 50);
+            
+            var response = await _httpClient.GetAsync($"search?q={Uri.EscapeDataString(query)}&type={type}&limit={actualLimit}");
+            
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                throw new HttpRequestException($"Spotify API error: {response.StatusCode} - {errorContent}");
+            }
+            
             return await response.Content.ReadAsStringAsync();
         }
+
+        public async Task<string> SearchAsync(string query, string type = "track", int limit = 10, int offset = 0)
+        {
+            var token = await GetAccessTokenAsync();
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            // Giới hạn limit tối đa là 50 theo Spotify API
+            int actualLimit = Math.Min(limit, 50);
+
+            // Tạo URL truy vấn có cả limit và offset
+            string url = $"search?q={Uri.EscapeDataString(query)}&type={type}&limit={actualLimit}&offset={offset}";
+
+            var response = await _httpClient.GetAsync(url);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                throw new HttpRequestException($"Spotify API error: {response.StatusCode} - {errorContent}");
+            }
+
+            return await response.Content.ReadAsStringAsync();
+        }
+
+
+
+
+
 
         // Get detailed track information by ID
         public async Task<string> GetTrackAsync(string trackId)

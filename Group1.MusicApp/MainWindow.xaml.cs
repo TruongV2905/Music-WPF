@@ -1,12 +1,14 @@
 ﻿using Group1.ApiClient;
 using Group1.MusicApp.Models;
-using Group1.MusicApp.ViewModels;
 using Group1.MusicApp.Services;
+using Group1.MusicApp.ViewModels;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
 namespace Group1.MusicApp
@@ -18,8 +20,12 @@ namespace Group1.MusicApp
     {
         private MusicAPI _musicApi;
         private TrackDetailViewModel _viewModel;
-        private List<Track> _currentTracks = new();
         private PlaylistService _playlistService;
+        private bool _isPlaying = false;
+        private string _currentQuery = "";
+        private int _currentOffset = 0;
+        private bool _isLoadingMore = false;
+        private List<Track> _currentTracks = new();
 
         public MainWindow()
         {
@@ -54,11 +60,73 @@ namespace Group1.MusicApp
             // Window is loaded and ready
             lblNowPlaying.Text = "Ready - Search for music!";
             
-            // Refresh playlist view
+            // Refresh playlist view if it exists
             if (PlaylistViewControl != null)
             {
                 PlaylistViewControl.Refresh();
             }
+
+            var scrollViewer = FindVisualChild<ScrollViewer>(lstTracks);
+            if (scrollViewer != null)
+            {
+                scrollViewer.ScrollChanged += ScrollViewer_ScrollChanged;
+            }
+        }
+
+        private async void ScrollViewer_ScrollChanged(object sender, ScrollChangedEventArgs e)
+        {
+            if (_isLoadingMore) return;
+
+            var scrollViewer = sender as ScrollViewer;
+            if (scrollViewer == null || string.IsNullOrEmpty(_currentQuery)) return;
+
+            // Khi kéo gần đến cuối danh sách
+            if (scrollViewer.VerticalOffset + scrollViewer.ViewportHeight >= scrollViewer.ExtentHeight - 50)
+            {
+                _isLoadingMore = true;
+                _currentOffset += 20;
+
+                lblNowPlaying.Text = "Đang tải thêm...";
+
+                try
+                {
+                    var moreTracks = await _viewModel.SearchTracksAsync(_currentQuery, 20, _currentOffset);
+                    if (moreTracks.Count > 0)
+                    {
+                        _currentTracks.AddRange(moreTracks);
+                        lstTracks.ItemsSource = null;
+                        lstTracks.ItemsSource = _currentTracks;
+                        lblNowPlaying.Text = $"Đã tải {_currentTracks.Count} bài hát";
+                    }
+                    else
+                    {
+                        lblNowPlaying.Text = "Hết kết quả!";
+                    }
+                }
+                catch (Exception ex)
+                {
+                    lblNowPlaying.Text = $"Lỗi tải thêm: {ex.Message}";
+                }
+                finally
+                {
+                    _isLoadingMore = false;
+                }
+            }
+        }
+
+        private static T FindVisualChild<T>(DependencyObject obj) where T : DependencyObject
+        {
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(obj); i++)
+            {
+                var child = VisualTreeHelper.GetChild(obj, i);
+                if (child is T t)
+                    return t;
+
+                var result = FindVisualChild<T>(child);
+                if (result != null)
+                    return result;
+            }
+            return null;
         }
 
         private async void btnSearch_Click(object sender, RoutedEventArgs e)
@@ -69,43 +137,45 @@ namespace Group1.MusicApp
         private async void txtSearch_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
+            {
                 await PerformSearch();
+            }
         }
 
         private async Task PerformSearch()
         {
-            string query = txtSearch.Text?.Trim();
+            _currentQuery = txtSearch.Text?.Trim();
 
-            if (string.IsNullOrEmpty(query))
+            if (string.IsNullOrEmpty(_currentQuery))
             {
-                MessageBox.Show("Please enter a search term.", "Search", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("Vui lòng nhập từ khóa tìm kiếm.", "Tìm kiếm", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
             try
             {
-                lblNowPlaying.Text = "Searching...";
+                lblNowPlaying.Text = "Đang tìm kiếm...";
                 lstTracks.ItemsSource = null;
+                _currentTracks.Clear();
+                _currentOffset = 0;
 
-                List<Track> results = await _viewModel.SearchTracksAsync(query, 20);
-                //List<Track> results = await _viewModel.SearchTracksWithImagesAsync(query, 20);
+                var results = await _viewModel.SearchTracksAsync(_currentQuery, 20, _currentOffset);
 
                 if (results.Count == 0)
                 {
-                    MessageBox.Show("No results found", "Search", MessageBoxButton.OK, MessageBoxImage.Information);
-                    lblNowPlaying.Text = "No results found";
+                    MessageBox.Show("Không tìm thấy kết quả", "Tìm kiếm", MessageBoxButton.OK, MessageBoxImage.Information);
+                    lblNowPlaying.Text = "Không tìm thấy kết quả";
                     return;
                 }
 
-                // Display results
-                _currentTracks = results;
-                lstTracks.ItemsSource = results;
-                lblNowPlaying.Text = $"Found {results.Count} tracks";
+                _currentTracks.AddRange(results);
+                lstTracks.ItemsSource = _currentTracks;
+                lblNowPlaying.Text = $"Tìm thấy {_currentTracks.Count} bài hát";
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Search failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                lblNowPlaying.Text = "Search failed";
+                MessageBox.Show($"Lỗi khi tìm kiếm: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                lblNowPlaying.Text = "Lỗi khi tìm kiếm";
             }
         }
 
@@ -115,32 +185,52 @@ namespace Group1.MusicApp
             {
                 try
                 {
-                    lblNowPlaying.Text = "Loading track details...";
+                    lblNowPlaying.Text = "Đang tải bài hát...";
 
-                    // Fetch full track details with audio features
+                    // Fetch full track details
                     var fullTrackDetails = await _viewModel.GetTrackDetailsAsync(selectedTrack.Id);
 
                     // Update UI with track info
                     lblNowPlaying.Text = fullTrackDetails.Name;
                     lblArtist.Text = fullTrackDetails.ArtistName;
-                    
+
                     if (!string.IsNullOrEmpty(fullTrackDetails.AlbumImageUrl))
                     {
                         imgCover.Source = new BitmapImage(new Uri(fullTrackDetails.AlbumImageUrl));
                     }
 
-                    lblNowPlaying.Text = "Track loaded";
+                    // Try to play preview if available
+                    if (!string.IsNullOrEmpty(fullTrackDetails.PreviewUrl))
+                    {
+                        try
+                        {
+                            mediaPlayer.Source = new Uri(fullTrackDetails.PreviewUrl);
+                            mediaPlayer.Play();
+                            _isPlaying = true;
+                            lblNowPlaying.Text = $"Đang phát: {fullTrackDetails.Name}";
+                        }
+                        catch
+                        {
+                            _isPlaying = false;
+                            lblNowPlaying.Text = $"Đã tải: {fullTrackDetails.Name} (Không có preview)";
+                        }
+                    }
+                    else
+                    {
+                        _isPlaying = false;
+                        lblNowPlaying.Text = $"Đã tải: {fullTrackDetails.Name} (Không có preview)";
+                    }
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Failed to load track details: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                    lblNowPlaying.Text = "Failed to load track";
+                    MessageBox.Show($"Lỗi khi tải bài hát: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                    lblNowPlaying.Text = "Lỗi khi tải bài hát";
                 }
             }
         }
 
         /// <summary>
-        /// Handle adding track to playlist from search results
+        /// Handle adding track to playlist
         /// </summary>
         private void AddToPlaylistButton_Click(object sender, RoutedEventArgs e)
         {
@@ -195,6 +285,47 @@ namespace Group1.MusicApp
         }
 
         /// <summary>
+        /// Handle menu item selection - Search
+        /// </summary>
+        private void SearchMenuItem_Selected(object sender, RoutedEventArgs e)
+        {
+            ShowSearchView();
+        }
+
+        /// <summary>
+        /// Handle menu item selection - Playlist
+        /// </summary>
+        private void PlaylistMenuItem_Selected(object sender, RoutedEventArgs e)
+        {
+            ShowPlaylistView();
+        }
+
+        /// <summary>
+        /// Show search view
+        /// </summary>
+        private void ShowSearchView()
+        {
+            SearchResultsContainer.Visibility = Visibility.Visible;
+            if (PlaylistViewControl != null)
+            {
+                PlaylistViewControl.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        /// <summary>
+        /// Show playlist view
+        /// </summary>
+        private void ShowPlaylistView()
+        {
+            SearchResultsContainer.Visibility = Visibility.Collapsed;
+            if (PlaylistViewControl != null)
+            {
+                PlaylistViewControl.Visibility = Visibility.Visible;
+                PlaylistViewControl.Refresh();
+            }
+        }
+
+        /// <summary>
         /// Handle track play request from playlist
         /// </summary>
         private async void PlaylistView_TrackPlayRequested(object? sender, string trackId)
@@ -225,15 +356,18 @@ namespace Group1.MusicApp
                     {
                         mediaPlayer.Source = new Uri(fullTrackDetails.PreviewUrl);
                         mediaPlayer.Play();
+                        _isPlaying = true;
                         lblNowPlaying.Text = $"Đang phát: {fullTrackDetails.Name}";
                     }
                     catch
                     {
+                        _isPlaying = false;
                         lblNowPlaying.Text = $"Đã tải: {fullTrackDetails.Name} (Không có preview)";
                     }
                 }
                 else
                 {
+                    _isPlaying = false;
                     lblNowPlaying.Text = $"Đã tải: {fullTrackDetails.Name} (Không có preview)";
                 }
             }
@@ -257,78 +391,26 @@ namespace Group1.MusicApp
             ShowSearchView();
         }
 
-        /// <summary>
-        /// Show search view - Module độc lập
-        /// </summary>
-        private void ShowSearchView()
+        private void Button_Click(object sender, RoutedEventArgs e)
         {
-            if (SearchResultsContainer != null)
-                SearchResultsContainer.Visibility = Visibility.Visible;
-            if (PlaylistViewControl != null)
-                PlaylistViewControl.Visibility = Visibility.Collapsed;
-        }
-
-        /// <summary>
-        /// Show playlist view - Module độc lập
-        /// </summary>
-        private void ShowPlaylistView()
-        {
-            if (SearchResultsContainer != null)
-                SearchResultsContainer.Visibility = Visibility.Collapsed;
-            if (PlaylistViewControl != null)
+            // Play/Pause button - toggle play/pause
+            if (mediaPlayer.Source != null)
             {
-                PlaylistViewControl.Visibility = Visibility.Visible;
-                PlaylistViewControl.Refresh();
-            }
-        }
-
-        /// <summary>
-        /// Handle menu item selection - Search
-        /// </summary>
-        private void SearchMenuItem_Selected(object sender, RoutedEventArgs e)
-        {
-            ShowSearchView();
-        }
-
-        /// <summary>
-        /// Handle menu item selection - Playlist
-        /// </summary>
-        private void PlaylistMenuItem_Selected(object sender, RoutedEventArgs e)
-        {
-            ShowPlaylistView();
-        }
-
-        private async void Button_Click(object sender, RoutedEventArgs e)
-        {
-            if (lstTracks.SelectedItem is Track selectedTrack)
-            {
-                try
+                if (_isPlaying)
                 {
-                    lblNowPlaying.Text = "Loading track...";
-
-                    // Fetch full track details with audio features
-                    var fullTrackDetails = await _viewModel.GetTrackDetailsAsync(selectedTrack.Id);
-
-                    // Update UI with track info
-                    lblNowPlaying.Text = fullTrackDetails.Name;
-                    lblArtist.Text = fullTrackDetails.ArtistName;
-                    
-                    if (!string.IsNullOrEmpty(fullTrackDetails.AlbumImageUrl))
-                    {
-                        imgCover.Source = new BitmapImage(new Uri(fullTrackDetails.AlbumImageUrl));
-                    }
-
-                    lblNowPlaying.Text = "Track loaded";
+                    mediaPlayer.Pause();
+                    _isPlaying = false;
                 }
-                catch (Exception ex)
+                else
                 {
-                    MessageBox.Show($"Failed to load track: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                    lblNowPlaying.Text = "Failed to load track";
+                    mediaPlayer.Play();
+                    _isPlaying = true;
                 }
             }
             else
             {
-                MessageBox.Show("Please select a track first.", "No Track Selected", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("Vui lòng chọn bài hát để phát.", "Chưa chọn bài hát", 
+                    MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
     }
