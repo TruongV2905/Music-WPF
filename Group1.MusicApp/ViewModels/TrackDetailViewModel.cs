@@ -89,6 +89,19 @@ namespace Group1.MusicApp.ViewModels
             }
         }
 
+        public async Task<List<Track>> SearchTracksAsync(string query, int limit = 10, int offset = 0)
+        {
+            try
+            {
+                var searchJson = await _musicApi.SearchAsync(query, "track", limit, offset);
+                return ParseTracksFromSearchJson(searchJson);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Search failed: {ex.Message}", ex);
+            }
+        }
+
         // ================== JSON Parsing Methods ==================
 
         private Track ParseTrackFromJson(string json)
