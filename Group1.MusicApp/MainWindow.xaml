@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:materialDesign="clr-namespace:MaterialDesignThemes.Wpf;assembly=MaterialDesignThemes.Wpf"
+        xmlns:views="clr-namespace:Group1.MusicApp.Views"
         mc:Ignorable="d"
         Title="🎧 Music Player"
         Height="744"
@@ -46,7 +47,8 @@
                          FontSize="16"
                          Margin="15,0,0,0"
                          Cursor="Hand">
-                    <ListBoxItem Content="❤️  Favorites" Margin="0,5"/>
+                    <ListBoxItem Content="🔍  Tìm kiếm" Margin="0,5" Selected="SearchMenuItem_Selected"/>
+                    <ListBoxItem Content="❤️  Playlist của tôi" Margin="0,5" Selected="PlaylistMenuItem_Selected"/>
                     <ListBoxItem Content="🕒  Recently Played" Margin="0,5"/>
                     <ListBoxItem Content="🤖  AI Mood Mix" Margin="0,5"/>
                 </ListBox>
@@ -62,7 +64,7 @@
                 <RowDefinition Height="Auto"/> <!-- Lyrics -->
             </Grid.RowDefinitions>
 
-            <!-- 🔍 Search bar -->
+            <!-- 🔍 Search bar - Giữ nguyên vị trí ban đầu -->
             <DockPanel Grid.Row="0" Margin="0,0,0,20">
                 <TextBox x:Name="txtSearch"
                          Width="500"
@@ -73,7 +75,8 @@
                          Margin="0,0,15,0"
                          Foreground="#FFF"
                          Background="#181818"
-                         BorderBrush="#333" />
+                         BorderBrush="#333"
+                         KeyDown="txtSearch_KeyDown" />
                 <Button x:Name="btnSearch"
                         Content="Tìm kiếm"
                         Width="100"
@@ -89,8 +92,8 @@
                 </Button>
             </DockPanel>
 
-            <!-- 🎵 Danh sách bài hát -->
-            <Border Grid.Row="1" Background="#121212" CornerRadius="10" Padding="10">
+            <!-- 🎵 Danh sách bài hát - Giữ nguyên vị trí ban đầu, chỉ thêm nút playlist -->
+            <Border x:Name="SearchResultsContainer" Grid.Row="1" Background="#121212" CornerRadius="10" Padding="10">
                 <ListView x:Name="lstTracks"
                           Foreground="White"
                           Background="#181818"
@@ -99,22 +102,51 @@
                           ScrollViewer.VerticalScrollBarVisibility="Auto">
                     <ListView.ItemTemplate>
                         <DataTemplate>
-                            <StackPanel Orientation="Horizontal" Margin="5">
-                                <Image Source="{Binding ImageUrl}"
-                                       Width="60" Height="60"
-                                       Margin="0,0,10,0"
-                                       Stretch="UniformToFill"
-                                       VerticalAlignment="Center"
-                                       ClipToBounds="True"/>
-                                <StackPanel VerticalAlignment="Center">
-                                    <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="14" />
-                                    <TextBlock Text="{Binding Artist}" FontSize="12" Foreground="Gray"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                
+                                <StackPanel Orientation="Horizontal" Grid.Column="0" Margin="5">
+                                    <Image Source="{Binding AlbumImageUrl}"
+                                           Width="60" Height="60"
+                                           Margin="0,0,10,0"
+                                           Stretch="UniformToFill"
+                                           VerticalAlignment="Center"
+                                           ClipToBounds="True"/>
+                                    <StackPanel VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="14" />
+                                        <TextBlock Text="{Binding ArtistName}" FontSize="12" Foreground="Gray"/>
+                                    </StackPanel>
                                 </StackPanel>
-                            </StackPanel>
+                                
+                                <!-- Nút thêm vào playlist - Module độc lập, không ảnh hưởng chức năng khác -->
+                                <Button Grid.Column="2"
+                                        Content="➕"
+                                        Width="40" Height="40"
+                                        Background="Transparent"
+                                        Foreground="#1DB954"
+                                        BorderThickness="0"
+                                        Cursor="Hand"
+                                        ToolTip="Thêm vào playlist"
+                                        Click="AddToPlaylistButton_Click"
+                                        Tag="{Binding}"
+                                        Margin="10,0,0,0"
+                                        FontSize="20"/>
+                            </Grid>
                         </DataTemplate>
                     </ListView.ItemTemplate>
                 </ListView>
             </Border>
+
+            <!-- Playlist View - Module độc lập, ẩn mặc định -->
+            <views:PlaylistView x:Name="PlaylistViewControl"
+                                Grid.Row="1"
+                                Visibility="Collapsed"
+                                TrackPlayRequested="PlaylistView_TrackPlayRequested"
+                                CloseRequested="PlaylistView_CloseRequested"/>
 
             <!-- 🎧 Media Player ẩn -->
             <MediaElement x:Name="mediaPlayer"
@@ -123,7 +155,7 @@
                           Volume="0.8"
                           Visibility="Collapsed"/>
 
-            <!-- ▶ Now Playing -->
+            <!-- ▶ Now Playing - Giữ nguyên vị trí ban đầu -->
             <Border Grid.Row="2"
                     Background="#181818"
                     CornerRadius="15"
@@ -156,7 +188,7 @@
                 </DockPanel>
             </Border>
 
-            <!-- 🎤 Lyrics -->
+            <!-- 🎤 Lyrics - Giữ nguyên vị trí ban đầu -->
             <Border Grid.Row="3"
                     Background="#101010"
                     CornerRadius="10"
