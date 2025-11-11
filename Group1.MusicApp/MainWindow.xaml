@@ -130,31 +130,180 @@
                     CornerRadius="15"
                     Padding="20"
                     Margin="0,15,0,0">
-                <DockPanel>
-                    <Image x:Name="imgCover"
-                           Width="90" Height="90"
-                           Stretch="UniformToFill"
-                           DockPanel.Dock="Left"
-                           Margin="0,0,15,0"/>
-                    <StackPanel DockPanel.Dock="Left" VerticalAlignment="Center">
-                        <TextBlock x:Name="lblNowPlaying"
-                                   Text="Chưa chọn bài"
-                                   Foreground="White"
-                                   FontSize="20"
-                                   FontWeight="Bold"/>
-                        <TextBlock x:Name="lblArtist"
-                                   Text=""
-                                   Foreground="#A0A0A0"
-                                   FontSize="14"/>
-                    </StackPanel>
+                <StackPanel>
+                    <!-- Player Controls -->
+                    <DockPanel Margin="0,0,0,15">
+                        <Image x:Name="imgCover"
+                               Width="90" Height="90"
+                               Stretch="UniformToFill"
+                               DockPanel.Dock="Left"
+                               Margin="0,0,15,0"/>
+                        <StackPanel DockPanel.Dock="Left" VerticalAlignment="Center">
+                            <TextBlock x:Name="lblNowPlaying"
+                                       Text="Chưa chọn bài"
+                                       Foreground="White"
+                                       FontSize="20"
+                                       FontWeight="Bold"/>
+                            <TextBlock x:Name="lblArtist"
+                                       Text=""
+                                       Foreground="#A0A0A0"
+                                       FontSize="14"/>
+                        </StackPanel>
 
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                        <Button Content="⏮️" Width="50" Height="50" Margin="10,0" Background="#222" Foreground="White" BorderBrush="Transparent" Cursor="Hand"/>
-                        <Button Content="⏯️" Width="50" Height="50" Margin="10,0" Background="#1DB954" Foreground="White" BorderBrush="Transparent" Cursor="Hand" Click="Button_Click"/>
-                        <Button Content="⏭️" Width="50" Height="50" Margin="10,0" Background="#222" Foreground="White" BorderBrush="Transparent" Cursor="Hand"/>
-                        <Button Content="💖" Width="50" Height="50" Margin="10,0" Background="#222" Foreground="#1DB954" BorderBrush="Transparent" Cursor="Hand"/>
-                    </StackPanel>
-                </DockPanel>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                            <Button Content="⏮️" Width="50" Height="50" Margin="10,0" Background="#222" Foreground="White" BorderBrush="Transparent" Cursor="Hand"/>
+                            <Button Content="⏯️" Width="50" Height="50" Margin="10,0" Background="#1DB954" Foreground="White" BorderBrush="Transparent" Cursor="Hand" Click="Button_Click"/>
+                            <Button Content="⏭️" Width="50" Height="50" Margin="10,0" Background="#222" Foreground="White" BorderBrush="Transparent" Cursor="Hand"/>
+                            <Button Content="💖" Width="50" Height="50" Margin="10,0" Background="#222" Foreground="#1DB954" BorderBrush="Transparent" Cursor="Hand"/>
+                        </StackPanel>
+                    </DockPanel>
+
+                    <!-- Metadata Section -->
+                    <Border x:Name="metadataPanel"
+                            Background="#1E1E1E"
+                            CornerRadius="10"
+                            Padding="15"
+                            Visibility="Collapsed">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Duration -->
+                            <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                                <TextBlock Text="Duration"
+                                           Foreground="#A0A0A0"
+                                           FontSize="12"
+                                           Margin="0,0,0,5"/>
+                                <TextBlock x:Name="lblDuration"
+                                           Text="--:--"
+                                           Foreground="White"
+                                           FontSize="16"
+                                           FontWeight="SemiBold"/>
+                            </StackPanel>
+
+                            <!-- Popularity -->
+                            <StackPanel Grid.Column="1" Margin="0,0,10,0">
+                                <TextBlock Text="Popularity"
+                                           Foreground="#A0A0A0"
+                                           FontSize="12"
+                                           Margin="0,0,0,5"/>
+                                <TextBlock x:Name="lblPopularity"
+                                           Text="--%"
+                                           Foreground="White"
+                                           FontSize="16"
+                                           FontWeight="SemiBold"/>
+                            </StackPanel>
+
+                            <!-- Release Date -->
+                            <StackPanel Grid.Column="2" Margin="0,0,10,0">
+                                <TextBlock Text="Release Date"
+                                           Foreground="#A0A0A0"
+                                           FontSize="12"
+                                           Margin="0,0,0,5"/>
+                                <TextBlock x:Name="lblReleaseDate"
+                                           Text="Unknown"
+                                           Foreground="White"
+                                           FontSize="16"
+                                           FontWeight="SemiBold"/>
+                            </StackPanel>
+
+                            <!-- Album -->
+                            <StackPanel Grid.Column="3">
+                                <TextBlock Text="Album"
+                                           Foreground="#A0A0A0"
+                                           FontSize="12"
+                                           Margin="0,0,0,5"/>
+                                <TextBlock x:Name="lblAlbum"
+                                           Text="Unknown"
+                                           Foreground="White"
+                                           FontSize="16"
+                                           FontWeight="SemiBold"
+                                           TextTrimming="CharacterEllipsis"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- Audio Features Section -->
+                    <Border x:Name="audioFeaturesPanel"
+                            Background="#1E1E1E"
+                            CornerRadius="10"
+                            Padding="15"
+                            Margin="0,10,0,0"
+                            Visibility="Collapsed">
+                        <StackPanel>
+                            <TextBlock Text="Audio Features"
+                                       Foreground="White"
+                                       FontSize="14"
+                                       FontWeight="SemiBold"
+                                       Margin="0,0,0,10"/>
+
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Energy -->
+                                <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                                    <TextBlock Text="Energy"
+                                               Foreground="#A0A0A0"
+                                               FontSize="11"
+                                               Margin="0,0,0,3"/>
+                                    <TextBlock x:Name="lblEnergy"
+                                               Text="--"
+                                               Foreground="#1DB954"
+                                               FontSize="14"
+                                               FontWeight="SemiBold"/>
+                                </StackPanel>
+
+                                <!-- Danceability -->
+                                <StackPanel Grid.Column="1" Margin="0,0,10,0">
+                                    <TextBlock Text="Danceability"
+                                               Foreground="#A0A0A0"
+                                               FontSize="11"
+                                               Margin="0,0,0,3"/>
+                                    <TextBlock x:Name="lblDanceability"
+                                               Text="--"
+                                               Foreground="#1DB954"
+                                               FontSize="14"
+                                               FontWeight="SemiBold"/>
+                                </StackPanel>
+
+                                <!-- Valence -->
+                                <StackPanel Grid.Column="2" Margin="0,0,10,0">
+                                    <TextBlock Text="Valence"
+                                               Foreground="#A0A0A0"
+                                               FontSize="11"
+                                               Margin="0,0,0,3"/>
+                                    <TextBlock x:Name="lblValence"
+                                               Text="--"
+                                               Foreground="#1DB954"
+                                               FontSize="14"
+                                               FontWeight="SemiBold"/>
+                                </StackPanel>
+
+                                <!-- Acousticness -->
+                                <StackPanel Grid.Column="3">
+                                    <TextBlock Text="Acousticness"
+                                               Foreground="#A0A0A0"
+                                               FontSize="11"
+                                               Margin="0,0,0,3"/>
+                                    <TextBlock x:Name="lblAcousticness"
+                                               Text="--"
+                                               Foreground="#1DB954"
+                                               FontSize="14"
+                                               FontWeight="SemiBold"/>
+                                </StackPanel>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
             </Border>
 
             <!-- 🎤 Lyrics -->

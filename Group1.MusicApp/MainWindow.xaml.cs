@@ -119,6 +119,27 @@ namespace Group1.MusicApp
                 if (!string.IsNullOrEmpty(fullTrackDetails.AlbumImageUrl))
                     imgCover.Source = new BitmapImage(new Uri(fullTrackDetails.AlbumImageUrl));
 
+                // Update metadata
+                lblDuration.Text = fullTrackDetails.Duration;
+                lblPopularity.Text = fullTrackDetails.PopularityText;
+                lblReleaseDate.Text = fullTrackDetails.ReleaseDateText;
+                lblAlbum.Text = fullTrackDetails.AlbumName;
+                metadataPanel.Visibility = Visibility.Visible;
+
+                // Update audio features if available
+                if (fullTrackDetails.AudioFeatures != null)
+                {
+                    lblEnergy.Text = $"{fullTrackDetails.AudioFeatures.EnergyPercent}%";
+                    lblDanceability.Text = $"{fullTrackDetails.AudioFeatures.DanceabilityPercent}%";
+                    lblValence.Text = $"{fullTrackDetails.AudioFeatures.ValencePercent}%";
+                    lblAcousticness.Text = $"{fullTrackDetails.AudioFeatures.AcousticnessPercent}%";
+                    audioFeaturesPanel.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    audioFeaturesPanel.Visibility = Visibility.Collapsed;
+                }
+
                 if (!string.IsNullOrEmpty(fullTrackDetails.PreviewUrl))
                 {
                     mediaPlayer.Source = new Uri(fullTrackDetails.PreviewUrl);
