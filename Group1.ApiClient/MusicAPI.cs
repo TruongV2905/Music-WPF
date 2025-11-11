@@ -80,6 +80,20 @@ namespace Group1.ApiClient
             return await response.Content.ReadAsStringAsync();
         }
 
+        public async Task<string> SearchAsync(string query, string type = "track", int limit = 10, int offset = 0)
+        {
+            var token = await GetAccessTokenAsync();
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            // Thêm offset vào query string
+            var url = $"search?q={Uri.EscapeDataString(query)}&type={type}&limit={limit}&offset={offset}";
+
+            var response = await _httpClient.GetAsync(url);
+            response.EnsureSuccessStatusCode();
+
+            return await response.Content.ReadAsStringAsync();
+        }
+
         // Get detailed track information by ID
         public async Task<string> GetTrackAsync(string trackId)
         {
