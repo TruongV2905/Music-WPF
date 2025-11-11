@@ -180,13 +180,41 @@ namespace Group1.MusicApp
                     // Update UI with track info
                     lblNowPlaying.Text = fullTrackDetails.Name;
                     lblArtist.Text = fullTrackDetails.ArtistName;
-                    
+
                     if (!string.IsNullOrEmpty(fullTrackDetails.AlbumImageUrl))
                     {
                         imgCover.Source = new BitmapImage(new Uri(fullTrackDetails.AlbumImageUrl));
                     }
 
-                    lblNowPlaying.Text = "Track loaded";
+                    // Update metadata
+                    lblDuration.Text = fullTrackDetails.Duration;
+                    lblPopularity.Text = fullTrackDetails.PopularityText;
+                    lblReleaseDate.Text = fullTrackDetails.ReleaseDateText;
+                    lblAlbum.Text = fullTrackDetails.AlbumName;
+                    metadataPanel.Visibility = Visibility.Visible;
+
+                    // Update audio features if available
+                    if (fullTrackDetails.AudioFeatures != null)
+                    {
+                        lblEnergy.Text = $"{fullTrackDetails.AudioFeatures.EnergyPercent}%";
+                        lblDanceability.Text = $"{fullTrackDetails.AudioFeatures.DanceabilityPercent}%";
+                        lblValence.Text = $"{fullTrackDetails.AudioFeatures.ValencePercent}%";
+                        lblAcousticness.Text = $"{fullTrackDetails.AudioFeatures.AcousticnessPercent}%";
+                        audioFeaturesPanel.Visibility = Visibility.Visible;
+                    }
+                    else
+                    {
+                        audioFeaturesPanel.Visibility = Visibility.Collapsed;
+                    }
+
+                    // Play preview if available
+                    if (!string.IsNullOrEmpty(fullTrackDetails.PreviewUrl))
+                    {
+                        mediaPlayer.Source = new Uri(fullTrackDetails.PreviewUrl);
+                        mediaPlayer.Play();
+                    }
+
+                    txtLyrics.Text = "🎵 Lyrics are not available for this song.";
                 }
                 catch (Exception ex)
                 {
@@ -263,7 +291,7 @@ namespace Group1.MusicApp
             {
                 lblNowPlaying.Text = "Loading track...";
 
-                // Fetch full track details
+                // Fetch full track details with audio features
                 var fullTrackDetails = await _viewModel.GetTrackDetailsAsync(trackId);
 
                 // Update UI with track info
@@ -275,6 +303,27 @@ namespace Group1.MusicApp
                     imgCover.Source = new BitmapImage(new Uri(fullTrackDetails.AlbumImageUrl));
                 }
 
+                // Update metadata
+                lblDuration.Text = fullTrackDetails.Duration;
+                lblPopularity.Text = fullTrackDetails.PopularityText;
+                lblReleaseDate.Text = fullTrackDetails.ReleaseDateText;
+                lblAlbum.Text = fullTrackDetails.AlbumName;
+                metadataPanel.Visibility = Visibility.Visible;
+
+                // Update audio features if available
+                if (fullTrackDetails.AudioFeatures != null)
+                {
+                    lblEnergy.Text = $"{fullTrackDetails.AudioFeatures.EnergyPercent}%";
+                    lblDanceability.Text = $"{fullTrackDetails.AudioFeatures.DanceabilityPercent}%";
+                    lblValence.Text = $"{fullTrackDetails.AudioFeatures.ValencePercent}%";
+                    lblAcousticness.Text = $"{fullTrackDetails.AudioFeatures.AcousticnessPercent}%";
+                    audioFeaturesPanel.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    audioFeaturesPanel.Visibility = Visibility.Collapsed;
+                }
+
                 // Try to play preview if available
                 if (!string.IsNullOrEmpty(fullTrackDetails.PreviewUrl))
                 {
@@ -282,17 +331,14 @@ namespace Group1.MusicApp
                     {
                         mediaPlayer.Source = new Uri(fullTrackDetails.PreviewUrl);
                         mediaPlayer.Play();
-                        lblNowPlaying.Text = $"Đang phát: {fullTrackDetails.Name}";
                     }
                     catch
                     {
-                        lblNowPlaying.Text = $"Đã tải: {fullTrackDetails.Name} (Không có preview)";
+                        MessageBox.Show("Không thể phát preview của bài hát này.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
                     }
                 }
-                else
-                {
-                    lblNowPlaying.Text = $"Đã tải: {fullTrackDetails.Name} (Không có preview)";
-                }
+
+                txtLyrics.Text = "🎵 Lyrics are not available for this song.";
             }
             catch (Exception ex)
             {
