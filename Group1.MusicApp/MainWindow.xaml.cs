@@ -161,7 +161,7 @@ namespace Group1.MusicApp
 
                 var results = await _viewModel.SearchTracksAsync(_currentQuery, 20, _currentOffset);
 
-                if (results.Count == 0)
+                if (results == null || results.Count == 0)
                 {
                     MessageBox.Show("Không tìm thấy kết quả", "Tìm kiếm", MessageBoxButton.OK, MessageBoxImage.Information);
                     lblNowPlaying.Text = "Không tìm thấy kết quả";
@@ -337,7 +337,7 @@ namespace Group1.MusicApp
             {
                 lblNowPlaying.Text = "Loading track...";
 
-                // Fetch full track details
+                // Fetch full track details with audio features
                 var fullTrackDetails = await _viewModel.GetTrackDetailsAsync(trackId);
 
                 // Update UI with track info
@@ -347,6 +347,27 @@ namespace Group1.MusicApp
                 if (!string.IsNullOrEmpty(fullTrackDetails.AlbumImageUrl))
                 {
                     imgCover.Source = new BitmapImage(new Uri(fullTrackDetails.AlbumImageUrl));
+                }
+
+                // Update metadata
+                lblDuration.Text = fullTrackDetails.Duration;
+                lblPopularity.Text = fullTrackDetails.PopularityText;
+                lblReleaseDate.Text = fullTrackDetails.ReleaseDateText;
+                lblAlbum.Text = fullTrackDetails.AlbumName;
+                metadataPanel.Visibility = Visibility.Visible;
+
+                // Update audio features if available
+                if (fullTrackDetails.AudioFeatures != null)
+                {
+                    lblEnergy.Text = $"{fullTrackDetails.AudioFeatures.EnergyPercent}%";
+                    lblDanceability.Text = $"{fullTrackDetails.AudioFeatures.DanceabilityPercent}%";
+                    lblValence.Text = $"{fullTrackDetails.AudioFeatures.ValencePercent}%";
+                    lblAcousticness.Text = $"{fullTrackDetails.AudioFeatures.AcousticnessPercent}%";
+                    audioFeaturesPanel.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    audioFeaturesPanel.Visibility = Visibility.Collapsed;
                 }
 
                 // Try to play preview if available
