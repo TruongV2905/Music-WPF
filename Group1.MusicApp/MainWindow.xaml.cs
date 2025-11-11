@@ -137,6 +137,10 @@ namespace Group1.MusicApp
                 }
                 else
                 {
+                    lblEnergy.Text = "";
+                    lblDanceability.Text = "";
+                    lblValence.Text = "";
+                    lblAcousticness.Text = "";
                     audioFeaturesPanel.Visibility = Visibility.Collapsed;
                 }
 
