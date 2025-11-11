@@ -4,7 +4,9 @@ using Group1.MusicApp.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media.Imaging;
 
 namespace Group1.MusicApp
 {
@@ -15,30 +17,25 @@ namespace Group1.MusicApp
     {
         private MusicAPI _musicApi;
         private TrackDetailViewModel _viewModel;
+        private List<Track> _currentTracks = new();
 
         public MainWindow()
         {
             InitializeComponent();
 
-            // Load environment variables from .env file
             try
             {
                 DotNetEnv.Env.Load();
             }
-            catch
-            {
-                // .env file might not exist, will use fallback values
-            }
+            catch { }
 
-            // Get credentials from environment variables
             string clientId = DotNetEnv.Env.GetString("SPOTIFY_CLIENT_ID", "YOUR_CLIENT_ID");
             string clientSecret = DotNetEnv.Env.GetString("SPOTIFY_CLIENT_SECRET", "YOUR_CLIENT_SECRET");
 
             if (clientId == "YOUR_CLIENT_ID" || clientSecret == "YOUR_CLIENT_SECRET")
             {
                 MessageBox.Show(
-                    "Please configure your Spotify API credentials in the .env file.\n\n" +
-                    "See SETUP_CREDENTIALS.md for instructions.",
+                    "Please configure your Spotify API credentials in the .env file.\n\nSee SETUP_CREDENTIALS.md for instructions.",
                     "Configuration Required",
                     MessageBoxButton.OK,
                     MessageBoxImage.Warning
@@ -58,35 +55,24 @@ namespace Group1.MusicApp
             }
         }
 
-        /// <summary>
-        /// Handle search button click
-        /// </summary>
-        private async void SearchButton_Click(object sender, RoutedEventArgs e)
+        private async void btnSearch_Click(object sender, RoutedEventArgs e)
         {
             await PerformSearch();
         }
 
-        /// <summary>
-        /// Handle Enter key in search box
-        /// </summary>
-        private async void SearchBox_KeyDown(object sender, KeyEventArgs e)
+        private async void txtSearch_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
-            {
                 await PerformSearch();
-            }
         }
 
-        /// <summary>
-        /// Perform search and display results
-        /// </summary>
-        private async System.Threading.Tasks.Task PerformSearch()
+        private async Task PerformSearch()
         {
             string? query = SearchBox?.Text?.Trim();
 
             if (string.IsNullOrEmpty(query))
             {
-                MessageBox.Show("Please enter a search term", "Search", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("Please enter a search term.", "Search", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
@@ -95,8 +81,8 @@ namespace Group1.MusicApp
                 if (StatusText != null) StatusText.Text = "Searching...";
                 if (SearchResultsList != null) SearchResultsList.ItemsSource = null;
 
-                // Search for tracks
                 List<Track> results = await _viewModel.SearchTracksAsync(query, 20);
+                //List<Track> results = await _viewModel.SearchTracksWithImagesAsync(query, 20);
 
                 if (results.Count == 0)
                 {
@@ -120,12 +106,9 @@ namespace Group1.MusicApp
             }
         }
 
-        /// <summary>
-        /// Handle track selection from search results
-        /// </summary>
-        private async void SearchResultsList_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        private async void lstTracks_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (SearchResultsList.SelectedItem is Track selectedTrack)
+            if (lstTracks.SelectedItem is Track selectedTrack)
             {
                 try
                 {
@@ -176,8 +159,10 @@ namespace Group1.MusicApp
         /// </summary>
         private void PlaylistButton_Click(object sender, RoutedEventArgs e)
         {
-            ShowPlaylistView();
-        }
+            try
+            {
+                lblNowPlaying.Text = "Loading track...";
+                var fullTrackDetails = await _viewModel.GetTrackDetailsAsync(track.Id);
 
         /// <summary>
         /// Show playlist view and hide other views
@@ -214,14 +199,12 @@ namespace Group1.MusicApp
             // Refresh playlist view if it's visible
             if (PlaylistView != null && PlaylistView.Visibility == Visibility.Visible)
             {
-                PlaylistView.Refresh();
+                MessageBox.Show($"Failed to load track: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                lblNowPlaying.Text = "Failed to play track.";
             }
         }
 
-        /// <summary>
-        /// Handle track play request from playlist
-        /// </summary>
-        private async void PlaylistView_TrackPlayRequested(object? sender, string trackId)
+        private void Button_Click(object sender, RoutedEventArgs e)
         {
             try
             {
@@ -236,7 +219,7 @@ namespace Group1.MusicApp
 
                 if (StatusText != null) StatusText.Text = "Track loaded";
             }
-            catch (Exception ex)
+            else
             {
                 MessageBox.Show($"Failed to load track: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 if (StatusText != null) StatusText.Text = "Failed to load track";
