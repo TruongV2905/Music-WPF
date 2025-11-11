@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
-
+using Group1.DAL.Dtos;
 namespace Group1.ApiClient
 {
     public class MusicAPI
@@ -122,6 +123,64 @@ namespace Group1.ApiClient
             var response = await _httpClient.GetAsync($"albums/{albumId}");
             response.EnsureSuccessStatusCode();
             return await response.Content.ReadAsStringAsync();
+        }
+
+        // ================= CUSTOM SEARCH: CHỈ LẤY TRACK CÓ PREVIEW ====================
+        public async Task<List<TrackInfo>> SearchTracksWithPreviewAsync(string query, int limit = 20)
+        {
+            var token = await GetAccessTokenAsync();
+            _httpClient.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", token);
+
+            var response = await _httpClient.GetAsync(
+                $"https://api.spotify.com/v1/search?q={Uri.EscapeDataString(query)}&type=track&limit={limit}");
+
+            response.EnsureSuccessStatusCode();
+
+            string json = await response.Content.ReadAsStringAsync();
+            using var doc = JsonDocument.Parse(json);
+
+            var results = new List<TrackInfo>();
+            var items = doc.RootElement.GetProperty("tracks").GetProperty("items").EnumerateArray();
+
+            foreach (var item in items)
+            {
+                string previewUrl = item.GetProperty("preview_url").GetString();
+                if (string.IsNullOrEmpty(previewUrl)) continue;
+
+                results.Add(new TrackInfo
+                {
+                    Id = item.GetProperty("id").GetString(),
+                    Name = item.GetProperty("name").GetString(),
+                    ArtistName = item.GetProperty("artists")[0].GetProperty("name").GetString(),
+                    AlbumImageUrl = item.GetProperty("album").GetProperty("images")[0].GetProperty("url").GetString(),
+                    PreviewUrl = previewUrl
+                });
+            }
+            return results;
+        }
+
+
+
+        // hiển thị lyrics
+        public async Task<string> GetLyricsAsync(string artist, string title)
+        {
+            using var client = new HttpClient();
+            try
+            {
+                string url = $"https://api.lyrics.ovh/v1/{Uri.EscapeDataString(artist)}/{Uri.EscapeDataString(title)}";
+                var response = await client.GetAsync(url);
+                response.EnsureSuccessStatusCode();
+
+                string json = await response.Content.ReadAsStringAsync();
+                using var doc = JsonDocument.Parse(json);
+
+                return doc.RootElement.GetProperty("lyrics").GetString();
+            }
+            catch
+            {
+                return "❌ Không tìm thấy lời bài hát.";
+            }
         }
     }
 }

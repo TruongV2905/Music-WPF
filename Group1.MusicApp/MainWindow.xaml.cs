@@ -1,12 +1,18 @@
-﻿using Group1.ApiClient;
-using Group1.MusicApp.Models;
-using Group1.MusicApp.ViewModels;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Threading;
+using Group1.ApiClient;
+using Group1.MusicApp.Models;
+using Group1.MusicApp.ViewModels;
 
 namespace Group1.MusicApp
 {
@@ -46,9 +52,11 @@ namespace Group1.MusicApp
             _viewModel = new TrackDetailViewModel(_musicApi);
         }
 
+        private MediaPlayer _player = new MediaPlayer();
+
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            lblNowPlaying.Text = "Ready to play 🎧";
+            lblNowPlaying.Text = "🎵 Đang phát file local...";
         }
 
         private async void btnSearch_Click(object sender, RoutedEventArgs e)
@@ -98,46 +106,60 @@ namespace Group1.MusicApp
             }
         }
 
+        // hiển thị lyric
         private async void lstTracks_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (lstTracks.SelectedItem is Track selectedTrack)
+            if (lstTracks.SelectedItem is Track selected)
             {
-                await PlayTrack(selectedTrack);
+                lblNowPlaying.Text = selected.Name;
+                lblArtist.Text = selected.ArtistName;
+                imgCover.Source = new BitmapImage(new Uri(selected.AlbumImageUrl));
+                mediaPlayer.Source = new Uri(selected.PreviewUrl);
+                mediaPlayer.Play();
+
+                // ✅ Gọi lyrics API
+                txtLyrics.Text = "🎵 Đang tải lời bài hát...";
+                var lyrics = await _musicApi.GetLyricsAsync(selected.ArtistName, selected.Name);
+                txtLyrics.Text = lyrics;
             }
         }
 
+        // lời chạy theo từng chữ
+        DispatcherTimer lyricsTimer;
+        string[] lyricLines;
+        int currentLine = 0;
         private async Task PlayTrack(Track track)
         {
-            try
+            // Phát nhạc
+            mediaPlayer.Source = new Uri(track.PreviewUrl);
+            mediaPlayer.Play();
+
+            // Lấy lời bài hát
+            var lyrics = await _musicApi.GetLyricsAsync(track.ArtistName, track.Name);
+            lyricLines = lyrics.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+
+            currentLine = 0;
+            txtLyrics.Text = lyricLines.Length > 0 ? lyricLines[0] : "🎶 Không có lời bài hát.";
+
+            // Khởi tạo timer để cập nhật từng dòng
+            lyricsTimer = new DispatcherTimer
             {
-                lblNowPlaying.Text = "Loading track...";
-                var fullTrackDetails = await _viewModel.GetTrackDetailsAsync(track.Id);
-
-                lblNowPlaying.Text = fullTrackDetails.Name;
-                lblArtist.Text = fullTrackDetails.ArtistName;
-
-                if (!string.IsNullOrEmpty(fullTrackDetails.AlbumImageUrl))
-                    imgCover.Source = new BitmapImage(new Uri(fullTrackDetails.AlbumImageUrl));
-
-                if (!string.IsNullOrEmpty(fullTrackDetails.PreviewUrl))
-                {
-                    mediaPlayer.Source = new Uri(fullTrackDetails.PreviewUrl);
-                    mediaPlayer.Play();
-                }
-                else
-                {
-                    MessageBox.Show("This track has no preview available.", "No Preview", MessageBoxButton.OK, MessageBoxImage.Information);
-                }
-
-                txtLyrics.Text = "🎵 Lyrics are not available for this song.";
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Failed to load track: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                lblNowPlaying.Text = "Failed to play track.";
-            }
+                Interval = TimeSpan.FromSeconds(3) // mỗi dòng hiển thị 3s
+            };
+            lyricsTimer.Tick += LyricsTimer_Tick;
+            lyricsTimer.Start();
         }
+        private void LyricsTimer_Tick(object sender, EventArgs e)
+        {
+            if (lyricLines == null || currentLine >= lyricLines.Length - 1)
+            {
+                lyricsTimer.Stop();
+                return;
+            }
 
+            currentLine++;
+            txtLyrics.Text = lyricLines[currentLine];
+        }
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             if (mediaPlayer.Source == null)
@@ -146,13 +168,16 @@ namespace Group1.MusicApp
             if (mediaPlayer.CanPause)
             {
                 mediaPlayer.Pause();
-                lblNowPlaying.Text += " ⏸️";
+                lblNowPlaying.Text += "⏸️";
             }
             else
             {
                 mediaPlayer.Play();
-                lblNowPlaying.Text = lblNowPlaying.Text.Replace(" ⏸️", " ▶️");
+                lblNowPlaying.Text = lblNowPlaying.Text.Replace("⏸️", "▶️");
             }
         }
+
+
+
     }
 }

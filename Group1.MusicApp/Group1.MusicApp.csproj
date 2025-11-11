@@ -20,6 +20,9 @@
     <ProjectReference Include="..\Group1.ApiClient\Group1.ApiClient.csproj">
       <Private>True</Private>
     </ProjectReference>
+    <ProjectReference Include="..\Group1.DAL\Group1.DAL.csproj">
+      <Private>True</Private>
+    </ProjectReference>
   </ItemGroup>
 
   <ItemGroup>
