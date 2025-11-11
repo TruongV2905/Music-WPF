@@ -106,9 +106,12 @@ namespace Group1.MusicApp
             }
         }
 
-        private async void lstTracks_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        /// <summary>
+        /// Handle track selection from search results
+        /// </summary>
+        private async void SearchResultsList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (lstTracks.SelectedItem is Track selectedTrack)
+            if (SearchResultsList.SelectedItem is Track selectedTrack)
             {
                 try
                 {
@@ -117,9 +120,8 @@ namespace Group1.MusicApp
                     // Fetch full track details with audio features
                     var fullTrackDetails = await _viewModel.GetTrackDetailsAsync(selectedTrack.Id);
 
-                    // Show track detail view
-                    ShowTrackDetailView();
-                    if (TrackDetailView != null) TrackDetailView.LoadTrack(fullTrackDetails);
+                    // Update player UI with metadata
+                    await PlayTrack(fullTrackDetails);
 
                     if (StatusText != null) StatusText.Text = "Track loaded";
                 }
@@ -132,55 +134,69 @@ namespace Group1.MusicApp
         }
 
         /// <summary>
+        /// Play a track and update UI with metadata
+        /// </summary>
+        private async Task PlayTrack(Track track)
+        {
+            try
+            {
+                lblNowPlaying.Text = track.Name;
+                lblArtist.Text = track.ArtistName;
+
+                if (!string.IsNullOrEmpty(track.AlbumImageUrl))
+                    imgCover.Source = new BitmapImage(new Uri(track.AlbumImageUrl));
+
+                // Update metadata
+                lblDuration.Text = track.Duration;
+                lblPopularity.Text = track.PopularityText;
+                lblReleaseDate.Text = track.ReleaseDateText;
+                lblAlbum.Text = track.AlbumName;
+                metadataPanel.Visibility = Visibility.Visible;
+
+                // Update audio features if available
+                if (track.AudioFeatures != null)
+                {
+                    lblEnergy.Text = $"{track.AudioFeatures.EnergyPercent}%";
+                    lblDanceability.Text = $"{track.AudioFeatures.DanceabilityPercent}%";
+                    lblValence.Text = $"{track.AudioFeatures.ValencePercent}%";
+                    lblAcousticness.Text = $"{track.AudioFeatures.AcousticnessPercent}%";
+                    audioFeaturesPanel.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    audioFeaturesPanel.Visibility = Visibility.Collapsed;
+                }
+
+                if (!string.IsNullOrEmpty(track.PreviewUrl))
+                {
+                    mediaPlayer.Source = new Uri(track.PreviewUrl);
+                    mediaPlayer.Play();
+                }
+                else
+                {
+                    MessageBox.Show("This track has no preview available.", "No Preview", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+
+                txtLyrics.Text = "🎵 Lyrics are not available for this song.";
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to play track: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        /// <summary>
         /// Handle Playlist selection from sidebar
         /// </summary>
         private void lstPlaylist_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
             if (lstPlaylist?.SelectedItem is System.Windows.Controls.ListBoxItem selectedItem)
             {
-                lblNowPlaying.Text = "Loading track...";
-                var fullTrackDetails = await _viewModel.GetTrackDetailsAsync(track.Id);
+                string content = selectedItem.Content?.ToString() ?? "";
 
-                lblNowPlaying.Text = fullTrackDetails.Name;
-                lblArtist.Text = fullTrackDetails.ArtistName;
-
-                if (!string.IsNullOrEmpty(fullTrackDetails.AlbumImageUrl))
-                    imgCover.Source = new BitmapImage(new Uri(fullTrackDetails.AlbumImageUrl));
-
-                // Update metadata
-                lblDuration.Text = fullTrackDetails.Duration;
-                lblPopularity.Text = fullTrackDetails.PopularityText;
-                lblReleaseDate.Text = fullTrackDetails.ReleaseDateText;
-                lblAlbum.Text = fullTrackDetails.AlbumName;
-                metadataPanel.Visibility = Visibility.Visible;
-
-                // Update audio features if available
-                if (fullTrackDetails.AudioFeatures != null)
-                {
-                    lblEnergy.Text = $"{fullTrackDetails.AudioFeatures.EnergyPercent}%";
-                    lblDanceability.Text = $"{fullTrackDetails.AudioFeatures.DanceabilityPercent}%";
-                    lblValence.Text = $"{fullTrackDetails.AudioFeatures.ValencePercent}%";
-                    lblAcousticness.Text = $"{fullTrackDetails.AudioFeatures.AcousticnessPercent}%";
-                    audioFeaturesPanel.Visibility = Visibility.Visible;
-                }
-                else
-                {
-                    lblEnergy.Text = "";
-                    lblDanceability.Text = "";
-                    lblValence.Text = "";
-                    lblAcousticness.Text = "";
-                    audioFeaturesPanel.Visibility = Visibility.Collapsed;
-                }
-
-                if (!string.IsNullOrEmpty(fullTrackDetails.PreviewUrl))
+                if (content.Contains("My Playlist") || content.Contains("Favorites") || content.Contains("Recently Played") || content.Contains("AI Mood Mix"))
                 {
                     ShowPlaylistView();
-                }
-                // Có thể thêm các xử lý khác cho Favorites, Recently Played, AI Mood Mix ở đây
-                else if (content.Contains("Favorites"))
-                {
-                    // TODO: Xử lý Favorites nếu cần
-                    ShowPlaylistView(); // Tạm thời dùng PlaylistView
                 }
             }
         }
@@ -190,10 +206,8 @@ namespace Group1.MusicApp
         /// </summary>
         private void PlaylistButton_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                lblNowPlaying.Text = "Loading track...";
-                var fullTrackDetails = await _viewModel.GetTrackDetailsAsync(track.Id);
+            ShowPlaylistView();
+        }
 
         /// <summary>
         /// Show playlist view and hide other views
@@ -230,12 +244,32 @@ namespace Group1.MusicApp
             // Refresh playlist view if it's visible
             if (PlaylistView != null && PlaylistView.Visibility == Visibility.Visible)
             {
-                MessageBox.Show($"Failed to load track: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                lblNowPlaying.Text = "Failed to play track.";
+                PlaylistView.Refresh();
             }
         }
 
+        /// <summary>
+        /// Handle play/pause button click
+        /// </summary>
         private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            if (mediaPlayer.Source == null)
+                return;
+
+            if (mediaPlayer.CanPause)
+            {
+                mediaPlayer.Pause();
+            }
+            else
+            {
+                mediaPlayer.Play();
+            }
+        }
+
+        /// <summary>
+        /// Handle track play request from playlist view
+        /// </summary>
+        private async void PlaylistView_TrackPlayRequested(object? sender, string trackId)
         {
             try
             {
@@ -244,13 +278,12 @@ namespace Group1.MusicApp
                 // Fetch full track details with audio features
                 var fullTrackDetails = await _viewModel.GetTrackDetailsAsync(trackId);
 
-                // Show track detail view
-                ShowTrackDetailView();
-                if (TrackDetailView != null) TrackDetailView.LoadTrack(fullTrackDetails);
+                // Update player UI with metadata
+                await PlayTrack(fullTrackDetails);
 
-                if (StatusText != null) StatusText.Text = "Track loaded";
+                if (StatusText != null) StatusText.Text = "Playing";
             }
-            else
+            catch (Exception ex)
             {
                 MessageBox.Show($"Failed to load track: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 if (StatusText != null) StatusText.Text = "Failed to load track";

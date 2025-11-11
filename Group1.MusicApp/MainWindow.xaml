@@ -79,7 +79,7 @@
                          Foreground="#FFF"
                          Background="#181818"
                          BorderBrush="#333"
-                         KeyDown="SearchBox_KeyDown" />
+                         KeyDown="txtSearch_KeyDown" />
                 <Button x:Name="SearchButton"
                         Content="Tìm kiếm"
                         Width="100"
@@ -89,7 +89,7 @@
                         FontWeight="Bold"
                         Cursor="Hand"
                         Style="{DynamicResource MaterialDesignRaisedButton}"
-                        Click="SearchButton_Click">
+                        Click="btnSearch_Click">
                     <Button.Effect>
                         <DropShadowEffect BlurRadius="15" Color="#1DB954" ShadowDepth="0" />
                     </Button.Effect>
