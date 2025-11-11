@@ -1,12 +1,13 @@
 ﻿using Group1.ApiClient;
 using Group1.MusicApp.Models;
-using Group1.MusicApp.ViewModels;
 using Group1.MusicApp.Services;
+using Group1.MusicApp.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
 namespace Group1.MusicApp
@@ -20,6 +21,9 @@ namespace Group1.MusicApp
         private TrackDetailViewModel _viewModel;
         private List<Track> _currentTracks = new();
         private PlaylistService _playlistService;
+        private int _currentOffset = 0;
+        private string _currentQuery = "";
+        private bool _isLoadingMore = false;
 
         public MainWindow()
         {
@@ -59,6 +63,57 @@ namespace Group1.MusicApp
             {
                 PlaylistViewControl.Refresh();
             }
+
+            var scrollViewer = FindVisualChild<ScrollViewer>(lstTracks);
+            if (scrollViewer != null)
+            {
+                scrollViewer.ScrollChanged += ScrollViewer_ScrollChanged;
+            }
+        }
+
+        private async void ScrollViewer_ScrollChanged(object sender, ScrollChangedEventArgs e)
+        {
+            var scrollViewer = sender as ScrollViewer;
+
+            // Nếu đang loading thì bỏ qua
+            if (_isLoadingMore) return;
+
+            // Nếu chạm gần cuối (ví dụ còn 50px)
+            if (scrollViewer.VerticalOffset + scrollViewer.ViewportHeight >= scrollViewer.ExtentHeight - 50)
+            {
+                _isLoadingMore = true;
+                _currentOffset += 20;
+
+                try
+                {
+                    var moreTracks = await _viewModel.SearchTracksAsync(_currentQuery, 20, _currentOffset);
+                    if (moreTracks.Count > 0)
+                    {
+                        _currentTracks.AddRange(moreTracks);
+                        lstTracks.ItemsSource = null;
+                        lstTracks.ItemsSource = _currentTracks;
+                    }
+                }
+                finally
+                {
+                    _isLoadingMore = false;
+                }
+            }
+        }
+
+        private static T FindVisualChild<T>(DependencyObject obj) where T : DependencyObject
+        {
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(obj); i++)
+            {
+                var child = VisualTreeHelper.GetChild(obj, i);
+                if (child is T childOfType)
+                    return childOfType;
+
+                var childOfChild = FindVisualChild<T>(child);
+                if (childOfChild != null)
+                    return childOfChild;
+            }
+            return null;
         }
 
         private async void btnSearch_Click(object sender, RoutedEventArgs e)
@@ -74,9 +129,9 @@ namespace Group1.MusicApp
 
         private async Task PerformSearch()
         {
-            string query = txtSearch.Text?.Trim();
+            _currentQuery = txtSearch.Text?.Trim();
 
-            if (string.IsNullOrEmpty(query))
+            if (string.IsNullOrEmpty(_currentQuery))
             {
                 MessageBox.Show("Please enter a search term.", "Search", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
@@ -86,21 +141,23 @@ namespace Group1.MusicApp
             {
                 lblNowPlaying.Text = "Searching...";
                 lstTracks.ItemsSource = null;
+                _currentTracks.Clear();
+                _currentOffset = 0;
 
-                List<Track> results = await _viewModel.SearchTracksAsync(query, 20);
-                //List<Track> results = await _viewModel.SearchTracksWithImagesAsync(query, 20);
+                // Lấy kết quả đầu tiên
+                var results = await _viewModel.SearchTracksAsync(_currentQuery, 20, _currentOffset);
 
-                if (results.Count == 0)
+                if (results == null || results.Count == 0)
                 {
-                    MessageBox.Show("No results found", "Search", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show("No results found.", "Search", MessageBoxButton.OK, MessageBoxImage.Information);
                     lblNowPlaying.Text = "No results found";
                     return;
                 }
 
-                // Display results
-                _currentTracks = results;
-                lstTracks.ItemsSource = results;
-                lblNowPlaying.Text = $"Found {results.Count} tracks";
+                // Lưu và hiển thị kết quả
+                _currentTracks.AddRange(results);
+                lstTracks.ItemsSource = _currentTracks;
+                lblNowPlaying.Text = $"Found {_currentTracks.Count} tracks";
             }
             catch (Exception ex)
             {
