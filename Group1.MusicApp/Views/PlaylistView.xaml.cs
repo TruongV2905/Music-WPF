@@ -14,6 +14,9 @@ namespace Group1.MusicApp.Views
         // Event để thông báo khi muốn phát bài hát
         public event EventHandler<string> TrackPlayRequested;
 
+        // Event để thông báo khi muốn đóng PlaylistView
+        public event EventHandler? CloseRequested;
+
         // Constructor - khởi tạo
         public PlaylistView()
         {
@@ -93,18 +96,15 @@ namespace Group1.MusicApp.Views
         private void PlayButton_Click(object sender, RoutedEventArgs e)
         {
             // Lấy button được click
-            Button button = sender as Button;
+            Button? button = sender as Button;
             if (button != null)
             {
                 // Lấy PlaylistItem từ Tag
-                PlaylistItem item = button.Tag as PlaylistItem;
-                if (item != null)
+                PlaylistItem? item = button.Tag as PlaylistItem;
+                if (item != null && !string.IsNullOrEmpty(item.TrackId))
                 {
                     // Gửi event để phát bài hát
-                    if (TrackPlayRequested != null)
-                    {
-                        TrackPlayRequested(this, item.TrackId);
-                    }
+                    TrackPlayRequested?.Invoke(this, item.TrackId);
                 }
             }
         }
@@ -113,12 +113,12 @@ namespace Group1.MusicApp.Views
         private void DeleteButton_Click(object sender, RoutedEventArgs e)
         {
             // Lấy button được click
-            Button button = sender as Button;
+            Button? button = sender as Button;
             if (button != null)
             {
                 // Lấy TrackId từ Tag
-                string trackId = button.Tag as string;
-                if (trackId != null)
+                string? trackId = button.Tag as string;
+                if (!string.IsNullOrEmpty(trackId))
                 {
                     // Hỏi xác nhận trước khi xóa
                     MessageBoxResult result = MessageBox.Show(
@@ -139,6 +139,13 @@ namespace Group1.MusicApp.Views
                     }
                 }
             }
+        }
+
+        // Hàm xử lý khi click nút đóng
+        private void CloseButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Gửi event để đóng PlaylistView
+            CloseRequested?.Invoke(this, EventArgs.Empty);
         }
     }
 }
