@@ -49,10 +49,7 @@ namespace Group1.MusicApp
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             // Window is loaded and ready
-            if (StatusText != null)
-            {
-                StatusText.Text = "Ready - Search for music!";
-            }
+            StatusText.Text = "Ready - Search for music!";
         }
 
         private async void btnSearch_Click(object sender, RoutedEventArgs e)
@@ -68,7 +65,7 @@ namespace Group1.MusicApp
 
         private async Task PerformSearch()
         {
-            string? query = SearchBox?.Text?.Trim();
+            string query = SearchBox.Text?.Trim();
 
             if (string.IsNullOrEmpty(query))
             {
@@ -78,8 +75,8 @@ namespace Group1.MusicApp
 
             try
             {
-                if (StatusText != null) StatusText.Text = "Searching...";
-                if (SearchResultsList != null) SearchResultsList.ItemsSource = null;
+                StatusText.Text = "Searching...";
+                SearchResultsList.ItemsSource = null;
 
                 List<Track> results = await _viewModel.SearchTracksAsync(query, 20);
                 //List<Track> results = await _viewModel.SearchTracksWithImagesAsync(query, 20);
@@ -87,22 +84,22 @@ namespace Group1.MusicApp
                 if (results.Count == 0)
                 {
                     MessageBox.Show("No results found", "Search", MessageBoxButton.OK, MessageBoxImage.Information);
-                    if (StatusText != null) StatusText.Text = "No results found";
+                    StatusText.Text = "No results found";
                     return;
                 }
 
                 // Display results
-                if (SearchResultsList != null) SearchResultsList.ItemsSource = results;
-                if (SearchResultsPanel != null) SearchResultsPanel.Visibility = Visibility.Visible;
-                if (StatusText != null) StatusText.Text = $"Found {results.Count} tracks";
+                SearchResultsList.ItemsSource = results;
+                SearchResultsPanel.Visibility = Visibility.Visible;
+                StatusText.Text = $"Found {results.Count} tracks";
 
                 // Hide welcome panel
-                if (WelcomePanel != null) WelcomePanel.Visibility = Visibility.Collapsed;
+                WelcomePanel.Visibility = Visibility.Collapsed;
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Search failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                if (StatusText != null) StatusText.Text = "Search failed";
+                StatusText.Text = "Search failed";
             }
         }
 
@@ -112,50 +109,27 @@ namespace Group1.MusicApp
             {
                 try
                 {
-                    if (StatusText != null) StatusText.Text = "Loading track details...";
+                    StatusText.Text = "Loading track details...";
 
                     // Fetch full track details with audio features
                     var fullTrackDetails = await _viewModel.GetTrackDetailsAsync(selectedTrack.Id);
 
                     // Show track detail view
                     ShowTrackDetailView();
-                    if (TrackDetailView != null) TrackDetailView.LoadTrack(fullTrackDetails);
+                    TrackDetailView.LoadTrack(fullTrackDetails);
 
-                    if (StatusText != null) StatusText.Text = "Track loaded";
+                    StatusText.Text = "Track loaded";
                 }
                 catch (Exception ex)
                 {
                     MessageBox.Show($"Failed to load track details: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                    if (StatusText != null) StatusText.Text = "Failed to load track";
+                    StatusText.Text = "Failed to load track";
                 }
             }
         }
 
         /// <summary>
-        /// Handle Playlist selection from sidebar
-        /// </summary>
-        private void lstPlaylist_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
-        {
-            if (lstPlaylist?.SelectedItem is System.Windows.Controls.ListBoxItem selectedItem)
-            {
-                string? content = selectedItem.Content?.ToString() ?? "";
-                
-                // Xử lý khi chọn "My Playlist"
-                if (content.Contains("My Playlist") || content.Contains("Playlist"))
-                {
-                    ShowPlaylistView();
-                }
-                // Có thể thêm các xử lý khác cho Favorites, Recently Played, AI Mood Mix ở đây
-                else if (content.Contains("Favorites"))
-                {
-                    // TODO: Xử lý Favorites nếu cần
-                    ShowPlaylistView(); // Tạm thời dùng PlaylistView
-                }
-            }
-        }
-
-        /// <summary>
-        /// Handle Playlist button click (kept for compatibility)
+        /// Handle Playlist button click
         /// </summary>
         private void PlaylistButton_Click(object sender, RoutedEventArgs e)
         {
@@ -169,15 +143,12 @@ namespace Group1.MusicApp
         /// </summary>
         private void ShowPlaylistView()
         {
-            if (PlaylistView != null)
-            {
-                PlaylistView.Visibility = Visibility.Visible;
-                PlaylistView.Refresh();
-            }
-            if (TrackDetailView != null) TrackDetailView.Visibility = Visibility.Collapsed;
-            if (WelcomePanel != null) WelcomePanel.Visibility = Visibility.Collapsed;
-            if (SearchResultsPanel != null) SearchResultsPanel.Visibility = Visibility.Collapsed;
-            if (StatusText != null) StatusText.Text = "My Playlist";
+            PlaylistView.Visibility = Visibility.Visible;
+            PlaylistView.Refresh();
+            TrackDetailView.Visibility = Visibility.Collapsed;
+            WelcomePanel.Visibility = Visibility.Collapsed;
+            SearchResultsPanel.Visibility = Visibility.Collapsed;
+            StatusText.Text = "My Playlist";
         }
 
         /// <summary>
@@ -185,10 +156,9 @@ namespace Group1.MusicApp
         /// </summary>
         private void ShowTrackDetailView()
         {
-            if (TrackDetailView != null) TrackDetailView.Visibility = Visibility.Visible;
-            if (PlaylistView != null) PlaylistView.Visibility = Visibility.Collapsed;
-            if (WelcomePanel != null) WelcomePanel.Visibility = Visibility.Collapsed;
-            if (SearchResultsPanel != null) SearchResultsPanel.Visibility = Visibility.Collapsed;
+            TrackDetailView.Visibility = Visibility.Visible;
+            PlaylistView.Visibility = Visibility.Collapsed;
+            WelcomePanel.Visibility = Visibility.Collapsed;
         }
 
         /// <summary>
@@ -197,7 +167,7 @@ namespace Group1.MusicApp
         private void TrackDetailView_TrackAddedToPlaylist(object? sender, Track track)
         {
             // Refresh playlist view if it's visible
-            if (PlaylistView != null && PlaylistView.Visibility == Visibility.Visible)
+            if (PlaylistView.Visibility == Visibility.Visible)
             {
                 MessageBox.Show($"Failed to load track: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 lblNowPlaying.Text = "Failed to play track.";
@@ -208,49 +178,22 @@ namespace Group1.MusicApp
         {
             try
             {
-                if (StatusText != null) StatusText.Text = "Loading track...";
+                StatusText.Text = "Loading track...";
 
                 // Fetch full track details with audio features
                 var fullTrackDetails = await _viewModel.GetTrackDetailsAsync(trackId);
 
                 // Show track detail view
                 ShowTrackDetailView();
-                if (TrackDetailView != null) TrackDetailView.LoadTrack(fullTrackDetails);
+                TrackDetailView.LoadTrack(fullTrackDetails);
 
-                if (StatusText != null) StatusText.Text = "Track loaded";
+                StatusText.Text = "Track loaded";
             }
             else
             {
                 MessageBox.Show($"Failed to load track: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                if (StatusText != null) StatusText.Text = "Failed to load track";
+                StatusText.Text = "Failed to load track";
             }
-        }
-
-        /// <summary>
-        /// Handle close playlist request
-        /// </summary>
-        private void PlaylistView_CloseRequested(object? sender, EventArgs e)
-        {
-            // Ẩn PlaylistView
-            if (PlaylistView != null) PlaylistView.Visibility = Visibility.Collapsed;
-
-            // Hiển thị lại WelcomePanel hoặc SearchResultsPanel
-            if (SearchResultsPanel != null && SearchResultsPanel.Visibility == Visibility.Visible)
-            {
-                // Nếu đang có kết quả tìm kiếm, giữ nguyên
-                return;
-            }
-            else
-            {
-                // Nếu không có kết quả tìm kiếm, hiển thị WelcomePanel
-                if (WelcomePanel != null) WelcomePanel.Visibility = Visibility.Visible;
-            }
-
-            // Cập nhật status
-            if (StatusText != null) StatusText.Text = "Ready - Search for music!";
-
-            // Bỏ chọn trong sidebar
-            if (lstPlaylist != null) lstPlaylist.SelectedItem = null;
         }
     }
 }
