@@ -4,7 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
-             xmlns:models="clr-namespace:Group1.MusicApp.Models"
+             xmlns:models="clr-namespace:Group1.MusicApp.Models;assembly=Group1.MusicApp.Models"
              mc:Ignorable="d"
              d:DesignHeight="700" d:DesignWidth="900"
              Background="#1a1a1a">
@@ -42,6 +42,7 @@
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
@@ -62,7 +63,20 @@
                            Text="0 bài hát"
                            FontSize="14"
                            Foreground="Gray"
-                           VerticalAlignment="Center"/>
+                           VerticalAlignment="Center"
+                           Margin="0,0,16,0"/>
+
+                <!-- Nút đóng -->
+                <Button x:Name="CloseButton"
+                        Grid.Column="3"
+                        Style="{StaticResource MaterialDesignIconButton}"
+                        ToolTip="Đóng Playlist"
+                        Width="32" Height="32"
+                        Padding="0">
+                    <materialDesign:PackIcon Kind="Close"
+                                            Width="20" Height="20"
+                                            Foreground="Gray"/>
+                </Button>
             </Grid>
         </Border>
 
@@ -139,7 +153,6 @@
                                 <!-- Nút Play -->
                                 <Button Grid.Column="3"
                                         Style="{StaticResource MaterialDesignIconButton}"
-                                        Click="PlayButton_Click"
                                         Tag="{Binding}"
                                         ToolTip="Phát bài hát"
                                         Margin="8,0">
@@ -151,7 +164,6 @@
                                 <!-- Nút Xóa -->
                                 <Button Grid.Column="4"
                                         Style="{StaticResource MaterialDesignIconButton}"
-                                        Click="DeleteButton_Click"
                                         Tag="{Binding TrackId}"
                                         ToolTip="Xóa khỏi playlist"
                                         Margin="8,0">

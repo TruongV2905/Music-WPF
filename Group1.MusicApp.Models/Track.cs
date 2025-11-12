@@ -1,12 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Group1.DAL.Dtos
+namespace Group1.MusicApp.Models
 {
-    public class TrackInfo
+    public class Track
     {
         public string Id { get; set; }
         public string Name { get; set; }
@@ -48,3 +45,4 @@ namespace Group1.DAL.Dtos
         public int AcousticnessPercent => (int)(Acousticness * 100);
     }
 }
+

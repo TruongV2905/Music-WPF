@@ -80,8 +80,7 @@ namespace Group1.MusicApp.Services
         }
 
         // [offset:xxx] (ms)
-        private static readonly Regex LrcOffsetRegex =
-            new(@"^\s*\[offset\s*:\s*(-?\d+)\s*\]\s*$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static readonly Regex LrcOffsetRegex =new(@"^\s*\[offset\s*:\s*(-?\d+)\s*\]\s*$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         // Nhiều timestamp trên 1 dòng: [mm:ss.xx][mm:ss.xx] Lyric...
         private static readonly Regex TimestampRegex =
