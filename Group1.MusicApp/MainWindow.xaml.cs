@@ -25,6 +25,10 @@ namespace Group1.MusicApp
         private readonly List<Track> _currentTracks = new();
         private Track? _currentTrackPlaying = null;
 
+        // Category tracking
+        private string _currentCategory = "trendy";
+        private Button? _selectedCategoryButton = null;
+
         // Progress
         private readonly DispatcherTimer _progressTimer = new();
 
@@ -103,6 +107,10 @@ namespace Group1.MusicApp
             _lastVolume01 = mediaPlayer.Volume;
             UpdateVolumeIcon();
             UpdatePlayButtonIcon();
+
+            // Load mặc định Trendy khi khởi động
+            _selectedCategoryButton = btnTrendy;
+            _ = LoadCategoryAsync("trendy");
         }
 
         private static T FindVisualChild<T>(DependencyObject obj) where T : DependencyObject
@@ -117,6 +125,57 @@ namespace Group1.MusicApp
             return null;
         }
 
+        // ===== CATEGORY LOADING =====
+        private async void btnCategory_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not Button btn || btn.Tag is not string category) return;
+
+            // Reset previous button style
+            if (_selectedCategoryButton != null)
+            {
+                _selectedCategoryButton.Background = new SolidColorBrush(Color.FromRgb(0x22, 0x22, 0x22));
+            }
+
+            // Highlight current category
+            btn.Background = (SolidColorBrush)Resources["Accent"];
+            _selectedCategoryButton = btn;
+
+            await LoadCategoryAsync(category);
+        }
+
+        private async Task LoadCategoryAsync(string category)
+        {
+            _currentCategory = category;
+            _currentQuery = category;
+            _currentOffset = 0;
+
+            try
+            {
+                lblNowPlaying.Text = $"🎵 Đang tải {category.ToUpper()}...";
+                lstTracks.ItemsSource = null;
+                _currentTracks.Clear();
+
+                // Load tracks từ iTunes với category
+                var results = await _itunes.SearchTracksAsync(category, limit: 30, offset: 0);
+                if (results == null || results.Count == 0)
+                {
+                    lblNowPlaying.Text = $"Không tìm thấy bài hát cho {category}";
+                    return;
+                }
+
+                _currentTracks.AddRange(results);
+                lstTracks.ItemsSource = _currentTracks;
+                lblNowPlaying.Text = $"🎵 {category.ToUpper()} • {_currentTracks.Count} bài hát";
+                ShowSearchView();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Lỗi khi tải category: {ex.Message}", "Lỗi",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+                lblNowPlaying.Text = "Lỗi khi tải nhạc";
+            }
+        }
+
         // ===== SEARCH =====
         private async void btnSearch_Click(object sender, RoutedEventArgs e) => await PerformSearch();
         private async void txtSearch_KeyDown(object sender, KeyEventArgs e) { if (e.Key == Key.Enter) await PerformSearch(); }
@@ -129,6 +188,14 @@ namespace Group1.MusicApp
                 MessageBox.Show("Vui lòng nhập từ khóa tìm kiếm.", "Tìm kiếm", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
+
+            // Reset category button khi search
+            if (_selectedCategoryButton != null)
+            {
+                _selectedCategoryButton.Background = new SolidColorBrush(Color.FromRgb(0x22, 0x22, 0x22));
+                _selectedCategoryButton = null;
+            }
+            _currentCategory = "search";
 
             try
             {
@@ -176,11 +243,11 @@ namespace Group1.MusicApp
                         _currentTracks.AddRange(moreTracks);
                         lstTracks.ItemsSource = null;
                         lstTracks.ItemsSource = _currentTracks;
-                        lblNowPlaying.Text = $"Đã tải {_currentTracks.Count} bài hát";
+                        lblNowPlaying.Text = $"🎵 {_currentCategory.ToUpper()} • {_currentTracks.Count} bài hát";
                     }
                     else
                     {
-                        lblNowPlaying.Text = "Hết kết quả!";
+                        lblNowPlaying.Text = $"🎵 {_currentCategory.ToUpper()} • Hết kết quả!";
                     }
                 }
                 catch (Exception ex)
