@@ -5,7 +5,6 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using Group1.MusicApp.Models;
-using Group1.MusicApp.Utilities;
 using Group1.MusicApp.Services;
 
 namespace Group1.MusicApp.Views
@@ -62,7 +61,7 @@ namespace Group1.MusicApp.Views
                     ImagePlaceholder.Visibility = Visibility.Collapsed;
 
                     // Extract and apply dominant color
-                    await ApplyDominantColorAsync(track.AlbumImageUrl);
+                    //await ApplyDominantColorAsync(track.AlbumImageUrl);
                 }
 
                 // Show genres if available
@@ -98,36 +97,36 @@ namespace Group1.MusicApp.Views
         /// <summary>
         /// Extract dominant color from album art and apply to background
         /// </summary>
-        private async System.Threading.Tasks.Task ApplyDominantColorAsync(string imageUrl)
-        {
-            try
-            {
-                var dominantColor = await ColorExtractor.GetDominantColorAsync(imageUrl);
-                var (startColor, endColor) = ColorExtractor.CreateGradient(dominantColor);
+        //private async System.Threading.Tasks.Task ApplyDominantColorAsync(string imageUrl)
+        //{
+        //    try
+        //    {
+        //        var dominantColor = await ColorExtractor.GetDominantColorAsync(imageUrl);
+        //        var (startColor, endColor) = ColorExtractor.CreateGradient(dominantColor);
 
-                // Animate color transition
-                var startAnimation = new ColorAnimation
-                {
-                    To = startColor,
-                    Duration = TimeSpan.FromSeconds(1),
-                    EasingFunction = new CubicEase { EasingMode = EasingMode.EaseInOut }
-                };
+        //        // Animate color transition
+        //        var startAnimation = new ColorAnimation
+        //        {
+        //            To = startColor,
+        //            Duration = TimeSpan.FromSeconds(1),
+        //            EasingFunction = new CubicEase { EasingMode = EasingMode.EaseInOut }
+        //        };
 
-                var endAnimation = new ColorAnimation
-                {
-                    To = endColor,
-                    Duration = TimeSpan.FromSeconds(1),
-                    EasingFunction = new CubicEase { EasingMode = EasingMode.EaseInOut }
-                };
+        //        var endAnimation = new ColorAnimation
+        //        {
+        //            To = endColor,
+        //            Duration = TimeSpan.FromSeconds(1),
+        //            EasingFunction = new CubicEase { EasingMode = EasingMode.EaseInOut }
+        //        };
 
-                GradientStart.BeginAnimation(GradientStop.ColorProperty, startAnimation);
-                GradientEnd.BeginAnimation(GradientStop.ColorProperty, endAnimation);
-            }
-            catch
-            {
-                // Ignore color extraction errors
-            }
-        }
+        //        GradientStart.BeginAnimation(GradientStop.ColorProperty, startAnimation);
+        //        GradientEnd.BeginAnimation(GradientStop.ColorProperty, endAnimation);
+        //    }
+        //    catch
+        //    {
+        //        // Ignore color extraction errors
+        //    }
+        //}
 
         /// <summary>
         /// Animate audio feature progress bar
