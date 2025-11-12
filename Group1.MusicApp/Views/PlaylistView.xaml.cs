@@ -153,6 +153,13 @@ namespace Group1.MusicApp.Views
             // Gửi event để đóng PlaylistView
             CloseRequested?.Invoke(this, EventArgs.Empty);
         }
+        public List<PlaylistItem> GetPlaylistItems()
+        {
+            if (viewModel?.PlaylistItems == null || viewModel.PlaylistItems.Count == 0)
+                return new List<PlaylistItem>();
+
+            return viewModel.PlaylistItems.ToList();
+        }
     }
 }
 

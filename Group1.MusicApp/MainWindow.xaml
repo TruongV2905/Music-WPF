@@ -123,6 +123,8 @@
                          Margin="10,0,0,0"
                          Cursor="Hand">
                     <ListBoxItem Content="🏠  Home" Margin="0,6" MouseLeftButtonUp="HomeMenuItem_Click"/>
+                    <!-- New Mood AI sidebar entry -->
+                    <ListBoxItem Content="🤖  Mood AI" Margin="0,6" MouseLeftButtonUp="MoodMenuItem_Click"/>
                 </ListBox>
 
                 <Separator Margin="15,20,15,10" Background="{StaticResource Divider}" Height="1"/>
@@ -359,6 +361,13 @@
                                 Grid.Column="0"
                                 Visibility="Collapsed"
                                 Margin="0,0,10,0"/>
+
+            <!-- Mood AI View (hidden by default) -->
+            <views:MoodAIView x:Name="MoodAIViewControl"
+                              Grid.Row="2"
+                              Grid.Column="0"
+                              Visibility="Collapsed"
+                              Margin="0,0,10,0"/>
 
             <!-- Now Playing + Lyrics -->
             <Border Grid.Row="2"

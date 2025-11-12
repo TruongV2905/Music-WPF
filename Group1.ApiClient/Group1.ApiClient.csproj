@@ -8,12 +8,18 @@
 
 	<ItemGroup>
 		<PackageReference Include="DotNetEnv" Version="3.1.1" />
+		<PackageReference Include="Google.Cloud.Speech.V1" Version="3.9.0" />
+		<PackageReference Include="Google.Cloud.TextToSpeech.V1" Version="3.17.0" />
 		<PackageReference Include="Microsoft.Data.Sqlite" Version="9.0.10" />
+		<PackageReference Include="NAudio" Version="2.2.1" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
 		<PackageReference Include="System.Drawing.Common" Version="9.0.0" />
+		<PackageReference Include="System.Speech" Version="10.0.0" />
 		<PackageReference Include="WebView2.Runtime.X64" Version="142.0.3595.76" />
 	</ItemGroup>
-
+<ItemGroup>
+  <None Include="google_tts_key.json" CopyToOutputDirectory="Always" />
+</ItemGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\Group1.MusicApp.Models\Group1.MusicApp.Models.csproj">
 			<Private>True</Private>
