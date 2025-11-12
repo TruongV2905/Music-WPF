@@ -1,6 +1,7 @@
 ﻿<Window x:Class="Group1.MusicApp.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+<<<<<<< Updated upstream
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:materialDesign="clr-namespace:MaterialDesignThemes.Wpf;assembly=MaterialDesignThemes.Wpf"
@@ -11,57 +12,178 @@
         WindowStartupLocation="CenterScreen"
         Background="#0B0B0B"
         Loaded="Window_Loaded">
+=======
+        xmlns:views="clr-namespace:Group1.MusicApp.Views"
+        Title="🎧 Music Player"
+        Height="760"
+        Width="1267"
+        Background="#121212"
+        WindowStartupLocation="CenterScreen"
+        Loaded="Window_Loaded"
+        >
+>>>>>>> Stashed changes
 
+    <!-- ============= THEME / PALETTE (Spotify-like) ============= -->
+    <Window.Resources>
+        <SolidColorBrush x:Key="BgPrimary" Color="#121212"/>
+        <SolidColorBrush x:Key="BgSecondary" Color="#181818"/>
+        <SolidColorBrush x:Key="BgCard" Color="#1C1C1C"/>
+        <SolidColorBrush x:Key="TextPrimary" Color="#FFFFFF"/>
+        <SolidColorBrush x:Key="TextSecondary" Color="#B3B3B3"/>
+        <SolidColorBrush x:Key="Accent" Color="#1DB954"/>
+        <SolidColorBrush x:Key="Divider" Color="#333333"/>
+
+        <!-- Flat button -->
+        <Style x:Key="FlatButton" TargetType="Button">
+            <Setter Property="Background" Value="#222"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="6">
+                            <ContentPresenter VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#2A2A2A"/>
+                </Trigger>
+                <Trigger Property="IsPressed" Value="True">
+                    <Setter Property="Background" Value="#1F1F1F"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Play (accent) circle -->
+        <Style x:Key="PlayButton" BasedOn="{StaticResource FlatButton}" TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource Accent}"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Width" Value="48"/>
+            <Setter Property="Height" Value="48"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="24">
+                            <ContentPresenter VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- List item -->
+        <Style TargetType="ListViewItem">
+            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Padding" Value="6"/>
+            <Setter Property="Margin" Value="4"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListViewItem">
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}" CornerRadius="6">
+                            <ContentPresenter/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#242424"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#2A2A2A"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <!-- ============= ROOT LAYOUT ============= -->
     <Grid>
         <Grid.ColumnDefinitions>
+<<<<<<< Updated upstream
             <ColumnDefinition Width="250"/> <!-- Sidebar -->
             <ColumnDefinition Width="*"/>   <!-- Main View -->
+=======
+            <ColumnDefinition Width="240"/>
+            <ColumnDefinition Width="*"/>
+>>>>>>> Stashed changes
         </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
 
-        <!-- 🌙 Sidebar -->
-        <DockPanel Grid.Column="0">
-            <DockPanel.Background>
-                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                    <GradientStop Color="#1E1E1E" Offset="0" />
-                    <GradientStop Color="#121212" Offset="1" />
-                </LinearGradientBrush>
-            </DockPanel.Background>
-
+        <!-- ============= SIDEBAR ============= -->
+        <DockPanel Grid.Column="0" Grid.RowSpan="2" Background="#000000">
             <StackPanel>
-                <StackPanel Orientation="Horizontal" Margin="15,25,0,30">
-                    <TextBlock Text="🎵"
-                               FontSize="28"
-                               Foreground="#1DB954"
-                               Margin="0,0,10,0"/>
-                    <TextBlock Text="My Playlist"
-                               FontSize="24"
-                               FontWeight="Bold"
-                               Foreground="#1DB954"/>
+                <!-- Logo -->
+                <StackPanel Orientation="Horizontal" Margin="20,24,0,20">
+                    <TextBlock Text="🎵" FontSize="28" Foreground="{StaticResource Accent}" Margin="0,0,10,0"/>
+                    <TextBlock Text="Spotify" FontSize="22" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
                 </StackPanel>
 
+                <!-- Nav -->
+                <ListBox Background="Transparent"
+                         Foreground="{StaticResource TextPrimary}"
+                         BorderThickness="0"
+                         FontSize="15"
+                         Margin="10,0,0,0"
+                         Cursor="Hand">
+                    <ListBoxItem Content="🏠  Home" Margin="0,6" />
+                    <ListBoxItem Content="📚  Your Library" Margin="0,6" Selected="PlaylistMenuItem_Selected"/>
+                </ListBox>
+
+                <Separator Margin="15,20,15,10" Background="{StaticResource Divider}" Height="1"/>
+
+                <TextBlock Text="Playlists" Margin="20,0,0,6" Foreground="{StaticResource TextSecondary}"/>
                 <ListBox x:Name="lstPlaylist"
                          Background="Transparent"
-                         Foreground="#F5F5F5"
+                         Foreground="{StaticResource TextPrimary}"
                          BorderThickness="0"
-                         FontSize="16"
-                         Margin="15,0,0,0"
+                         FontSize="14"
+                         Margin="10,0,0,0"
                          Cursor="Hand">
+<<<<<<< Updated upstream
                     <ListBoxItem Content="❤️  Favorites" Margin="0,5"/>
                     <ListBoxItem Content="🕒  Recently Played" Margin="0,5"/>
                     <ListBoxItem Content="🤖  AI Mood Mix" Margin="0,5"/>
+=======
+                    <ListBoxItem Content="❤️ My Playlist" Margin="0,5" Selected="PlaylistMenuItem_Selected"/>
+>>>>>>> Stashed changes
                 </ListBox>
             </StackPanel>
         </DockPanel>
 
-        <!-- 🌟 Main View -->
-        <Grid Grid.Column="1" Margin="20">
+        <!-- ============= MAIN CONTENT ============= -->
+        <Grid Grid.Column="1" Grid.Row="0" Background="{StaticResource BgPrimary}" Margin="16,16,16,8">
             <Grid.RowDefinitions>
+<<<<<<< Updated upstream
                 <RowDefinition Height="Auto"/> <!-- Search -->
                 <RowDefinition Height="*"/>    <!-- List -->
                 <RowDefinition Height="Auto"/> <!-- Now Playing -->
                 <RowDefinition Height="Auto"/> <!-- Lyrics -->
+=======
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+>>>>>>> Stashed changes
             </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
 
+<<<<<<< Updated upstream
             <!-- 🔍 Search bar -->
             <DockPanel Grid.Row="0" Margin="0,0,0,20">
                 <TextBox x:Name="txtSearch"
@@ -75,28 +197,88 @@
                          Background="#181818"
                          BorderBrush="#333" 
                          KeyDown="txtSearch_KeyDown" />
-                <Button x:Name="btnSearch"
-                        Content="Tìm kiếm"
-                        Width="100"
-                        Background="#1DB954"
-                        Foreground="White"
-                        FontWeight="Bold"
-                        Cursor="Hand"
-                        Style="{DynamicResource MaterialDesignRaisedButton}"
-                        Click="btnSearch_Click">
-                    <Button.Effect>
-                        <DropShadowEffect BlurRadius="15" Color="#1DB954" ShadowDepth="0" />
-                    </Button.Effect>
-                </Button>
-            </DockPanel>
+=======
+            <!-- Search bar: giữ underline tím (vẽ tay), căn giữa hoàn hảo -->
+            <Grid Grid.Row="0" Grid.ColumnSpan="2" Margin="0,0,0,14" Height="44">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
 
+                <!-- Search box -->
+                <Border Grid.Column="0"
+                        Background="#1A1A1A"
+                        BorderBrush="{StaticResource Divider}"
+                        BorderThickness="1"
+                        CornerRadius="10"
+                        Padding="12,0">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="26"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Text="🔍"
+                                   Grid.Column="0"
+                                   VerticalAlignment="Center"
+                                   Foreground="{StaticResource TextSecondary}"
+                                   Opacity="0.9"/>
+
+                        <!-- Vùng nhập + underline tím -->
+                        <Grid Grid.Column="1">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="2"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBox x:Name="txtSearch"
+                                     Grid.Row="0"
+                                     Background="Transparent"
+                                     BorderThickness="0"
+                                     Foreground="{StaticResource TextPrimary}"
+                                     CaretBrush="{StaticResource TextPrimary}"
+                                     FontSize="15"
+                                     Padding="0"
+                                     VerticalContentAlignment="Center"
+                                     TextAlignment="Left"
+                                     KeyDown="txtSearch_KeyDown"
+                                     ToolTip="Tìm bài hát hoặc ca sĩ..."/>
+                        </Grid>
+                    </Grid>
+                </Border>
+
+                <!-- Search button cùng chiều cao -->
+>>>>>>> Stashed changes
+                <Button x:Name="btnSearch"
+                        Grid.Column="1"
+                        Content="Search"
+                        Style="{StaticResource FlatButton}"
+                        Background="{StaticResource Accent}"
+                        Margin="10,0,0,0"
+                        Height="44"
+                        MinWidth="110"
+                        Click="btnSearch_Click"/>
+            </Grid>
+
+<<<<<<< Updated upstream
             <!-- 🎵 Danh sách bài hát -->
             <Border Grid.Row="1" Background="#121212" CornerRadius="10" Padding="10">
+=======
+            <!-- Track list card -->
+            <Border x:Name="SearchResultsContainer"
+                    Grid.Row="1"
+                    Grid.Column="0"
+                    Background="{StaticResource BgSecondary}"
+                    CornerRadius="10"
+                    Padding="10"
+                    Margin="0,0,10,0">
+>>>>>>> Stashed changes
                 <ListView x:Name="lstTracks"
-                          Foreground="White"
-                          Background="#181818"
+                          Foreground="{StaticResource TextPrimary}"
+                          Background="#191919"
                           BorderThickness="0"
                           SelectionChanged="lstTracks_SelectionChanged"
+<<<<<<< Updated upstream
                           ScrollViewer.VerticalScrollBarVisibility="Auto">
                     <ListView.ItemTemplate>
                         <DataTemplate>
@@ -112,11 +294,37 @@
                                     <TextBlock Text="{Binding ArtistName}" FontSize="12" Foreground="Gray"/>
                                 </StackPanel>
                             </StackPanel>
+=======
+                          ScrollViewer.VerticalScrollBarVisibility="Auto"
+                          HorizontalContentAlignment="Stretch"
+                          PreviewMouseLeftButtonDown="lstTracks_PreviewMouseLeftButtonDown">
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Margin="5">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <Image Width="56"
+                                       Height="56"
+                                       Margin="0,0,10,0"
+                                       Stretch="UniformToFill"
+                                       VerticalAlignment="Center"
+                                       Source="{Binding AlbumImageUrl}"/>
+
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="14"/>
+                                    <TextBlock Text="{Binding ArtistName}" FontSize="12" Foreground="{StaticResource TextSecondary}"/>
+                                </StackPanel>
+                            </Grid>
+>>>>>>> Stashed changes
                         </DataTemplate>
                     </ListView.ItemTemplate>
                 </ListView>
             </Border>
 
+<<<<<<< Updated upstream
             <!-- 🎧 Media Player ẩn -->
             <MediaElement x:Name="mediaPlayer"
                           LoadedBehavior="Manual"
@@ -172,6 +380,196 @@
                                Text="🎶 Chưa có lời bài hát..." />
                 </ScrollViewer>
             </Border>
+=======
+            <!-- Playlist View -->
+            <views:PlaylistView x:Name="PlaylistViewControl"
+                                Grid.Row="1"
+                                Grid.Column="0"
+                                Visibility="Collapsed"/>
+
+            <!-- Now Playing + Lyrics -->
+            <Border Grid.Row="1"
+                    Background="{StaticResource BgSecondary}"
+                    CornerRadius="10"
+                    Padding="16" Grid.ColumnSpan="2" Margin="663,0,-31,0">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="10"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Now Playing header -->
+                    <Grid Grid.Row="0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Image x:Name="imgCover"
+                               Width="88"
+                               Height="88"
+                               Grid.Column="0"
+                               Stretch="UniformToFill"
+                               Margin="0,0,12,0"
+                               VerticalAlignment="Center"/>
+
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,4,0">
+                            <TextBlock x:Name="lblNowPlaying"
+                                       Text="Chưa chọn bài"
+                                       Foreground="{StaticResource TextPrimary}"
+                                       FontSize="18"
+                                       FontWeight="Bold"
+                                       TextTrimming="CharacterEllipsis"
+                                       MaxWidth="340" Width="284" Height="33" RenderTransformOrigin="0.05,0.852"/>
+                            <TextBlock x:Name="lblArtist"
+                                       Text=""
+                                       Foreground="{StaticResource TextSecondary}"
+                                       FontSize="14"
+                                       TextTrimming="CharacterEllipsis"
+                                       MaxWidth="340"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <Border Grid.Row="1" Height="10" Background="Transparent"/>
+
+                    <!-- Lyrics plain text (scroll) -->
+                    <Border Grid.Row="2" Background="#101010" CornerRadius="8" Padding="16">
+                        <Grid>
+                            <ScrollViewer x:Name="svPlainLyrics"
+                                          VerticalScrollBarVisibility="Auto"
+                                          PanningMode="VerticalFirst"
+                                          VerticalAlignment="Stretch">
+                                <TextBlock x:Name="txtLyrics"
+                                           Foreground="#EDEDED"
+                                           FontSize="18"
+                                           TextWrapping="Wrap"
+                                           LineHeight="30"
+                                           TextAlignment="Center"
+                                           FontWeight="Medium"
+                                           Opacity="0.95"
+                                           Text="🎶 Chưa có lời bài hát..."/>
+                            </ScrollViewer>
+
+                            <ScrollViewer x:Name="svLyrics"
+                                          Visibility="Collapsed"
+                                          VerticalScrollBarVisibility="Auto">
+                                <StackPanel>
+                                    <TextBlock Text="Lyrics sync area"
+                                               Foreground="Gray"
+                                               HorizontalAlignment="Center"
+                                               Margin="8"/>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </Border>
+>>>>>>> Stashed changes
         </Grid>
+
+        <!-- ============= BOTTOM PLAYER (ẩn khi chưa chọn bài) ============= -->
+        <Border x:Name="BottomPlayerBar"
+                Grid.Column="1" Grid.Row="1"
+                Background="#181818"
+                Padding="10,8"
+                BorderBrush="{StaticResource Divider}"
+                BorderThickness="1,1,1,0"
+                Visibility="Collapsed">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="2*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Hidden MediaElement (engine) -->
+                <MediaElement x:Name="mediaPlayer"
+                              LoadedBehavior="Manual"
+                              UnloadedBehavior="Manual"
+                              Volume="0.8"
+                              Visibility="Collapsed"/>
+
+                <!-- Left: tiny cover + titles -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Image Width="44" Height="44" Source="{Binding ElementName=imgCover, Path=Source}"
+                           Stretch="UniformToFill" Margin="0,0,10,0"/>
+                    <StackPanel>
+                        <TextBlock Text="{Binding ElementName=lblNowPlaying, Path=Text}"
+                                   Foreground="{StaticResource TextPrimary}"
+                                   FontWeight="SemiBold"
+                                   FontSize="14"
+                                   TextTrimming="CharacterEllipsis" MaxWidth="260"/>
+                        <TextBlock Text="{Binding ElementName=lblArtist, Path=Text}"
+                                   Foreground="{StaticResource TextSecondary}"
+                                   FontSize="12"
+                                   TextTrimming="CharacterEllipsis" MaxWidth="260"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- Center: controls + progress -->
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,6">
+                        <Button x:Name="btnPrev" Content="⏮" Width="40" Height="40" Margin="6,0"
+                                Style="{StaticResource FlatButton}" Click="btnPrev_Click" ToolTip="Previous"/>
+                        <Button x:Name="btnPlayPause" Content="▶" Margin="6,0"
+                                Style="{StaticResource PlayButton}" Click="btnPlayPause_Click" ToolTip="Play"/>
+                        <Button x:Name="btnNext" Content="⏭" Width="40" Height="40" Margin="6,0"
+                                Style="{StaticResource FlatButton}" Click="btnNext_Click" ToolTip="Next"/>
+                    </StackPanel>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="40"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="40"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock x:Name="lblElapsed" Grid.Column="0"
+                                   Text="0:00" Foreground="{StaticResource TextSecondary}"
+                                   VerticalAlignment="Center" HorizontalAlignment="Left" FontSize="12" />
+
+                        <ProgressBar x:Name="progressPreview"
+                                     Grid.Column="1"
+                                     Height="5"
+                                     Minimum="0"
+                                     Maximum="30"
+                                     Value="0"
+                                     Foreground="{StaticResource Accent}"
+                                     Background="{StaticResource Divider}"
+                                     Margin="8,0"/>
+
+                        <TextBlock x:Name="lblTotal" Grid.Column="2"
+                                   Text="0:30" Foreground="{StaticResource TextSecondary}"
+                                   VerticalAlignment="Center" HorizontalAlignment="Right" FontSize="12"/>
+                    </Grid>
+                </StackPanel>
+
+                <!-- Right: volume (cân giữa) -->
+                <Grid Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right" Height="40">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="44"/>
+                        <ColumnDefinition Width="160"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Button x:Name="btnVolume"
+                            Grid.Column="0"
+                            Width="40" Height="40"
+                            Style="{StaticResource FlatButton}"
+                            Background="#222"
+                            Click="btnVolume_Click"
+                            ToolTip="Mute">
+                        <TextBlock Text="🔊" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                    </Button>
+
+                    <Slider x:Name="sldVolume"
+                            Grid.Column="1"
+                            Margin="10,0,0,0"
+                            VerticalAlignment="Center"
+                            Minimum="0" Maximum="100" Value="80"
+                            ValueChanged="sldVolume_ValueChanged"/>
+                </Grid>
+            </Grid>
+        </Border>
     </Grid>
 </Window>
