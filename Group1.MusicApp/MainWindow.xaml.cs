@@ -397,7 +397,7 @@ namespace Group1.MusicApp
                 if (BottomPlayerBar.Visibility != Visibility.Visible)
                     BottomPlayerBar.Visibility = Visibility.Visible;
 
-                ShowSearchView();
+                // Không chuyển view, vẫn ở lại Playlist
                 await PlaySelectedTrackAsync(t);
             }
             catch (Exception ex)
@@ -409,8 +409,54 @@ namespace Group1.MusicApp
         }
 
         private void PlaylistView_CloseRequested(object? sender, EventArgs e) => ShowSearchView();
-        private void SearchMenuItem_Selected(object sender, RoutedEventArgs e) => ShowSearchView();
-        private void PlaylistMenuItem_Selected(object sender, RoutedEventArgs e) => ShowPlaylistView();
+        
+        private void HomeMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            ShowSearchView();
+        }
+
+        private void PlaylistMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            ShowPlaylistView();
+        }
+
+        private void btnAddToPlaylist_Click(object sender, RoutedEventArgs e)
+        {
+            Button? button = sender as Button;
+            if (button == null) return;
+
+            Track? track = button.Tag as Track;
+            if (track == null) return;
+
+            try
+            {
+                // Kiểm tra xem bài hát đã có trong playlist chưa
+                if (PlaylistViewControl.IsTrackInPlaylist(track.Id))
+                {
+                    MessageBox.Show("Bài hát này đã có trong playlist!", "Thông báo",
+                        MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+
+                // Thêm bài hát vào playlist
+                bool success = PlaylistViewControl.AddTrack(track);
+                if (success)
+                {
+                    MessageBox.Show($"Đã thêm '{track.Name}' vào playlist!", "Thành công",
+                        MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                else
+                {
+                    MessageBox.Show("Không thể thêm bài hát vào playlist.", "Lỗi",
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Lỗi khi thêm vào playlist: {ex.Message}", "Lỗi",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
 
         private void ShowSearchView()
         {

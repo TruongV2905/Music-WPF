@@ -16,18 +16,24 @@ namespace Group1.MusicApp.Services
         // Constructor - khởi tạo khi tạo object
         public PlaylistService()
         {
-            // Lấy thư mục AppData của user
-            string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            string appFolder = Path.Combine(appDataPath, "MusicApp");
+            // Lấy thư mục chứa file .exe (bin/Debug/net9.0-windows)
+            string exePath = AppDomain.CurrentDomain.BaseDirectory;
+            
+            // Đi lên 3 cấp để đến thư mục project gốc
+            // bin/Debug/net9.0-windows → bin/Debug → bin → project root
+            string projectRoot = Path.GetFullPath(Path.Combine(exePath, "..", "..", "..", ".."));
+            
+            // Tạo thư mục Data trong project
+            string dataFolder = Path.Combine(projectRoot, "Data");
             
             // Tạo thư mục nếu chưa có
-            if (!Directory.Exists(appFolder))
+            if (!Directory.Exists(dataFolder))
             {
-                Directory.CreateDirectory(appFolder);
+                Directory.CreateDirectory(dataFolder);
             }
 
             // Tạo đường dẫn file database
-            dbPath = Path.Combine(appFolder, "playlist.db");
+            dbPath = Path.Combine(dataFolder, "playlist.db");
             connectionString = "Data Source=" + dbPath;
             
             // Khởi tạo database (tạo bảng nếu chưa có)

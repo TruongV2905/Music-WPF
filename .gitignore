@@ -7,3 +7,8 @@ obj/
 secrets.json
 *.config
 /Group1.MusicApp/.env
+
+# Database files
+Data/
+playlist.db
+*.db

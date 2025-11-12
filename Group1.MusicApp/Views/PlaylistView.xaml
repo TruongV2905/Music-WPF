@@ -102,25 +102,8 @@
                                         CornerRadius="4"
                                         ClipToBounds="True"
                                         Background="#333">
-                                    <Image Stretch="UniformToFill">
-                                        <Image.Source>
-                                            <Binding Path="AlbumImageUrl">
-                                                <Binding.TargetNullValue>
-                                                    <ImageSource>
-                                                        <DrawingImage>
-                                                            <DrawingImage.Drawing>
-                                                                <GeometryDrawing Brush="#333">
-                                                                    <GeometryDrawing.Geometry>
-                                                                        <RectangleGeometry Rect="0,0,50,50"/>
-                                                                    </GeometryDrawing.Geometry>
-                                                                </GeometryDrawing>
-                                                            </DrawingImage.Drawing>
-                                                        </DrawingImage>
-                                                    </ImageSource>
-                                                </Binding.TargetNullValue>
-                                            </Binding>
-                                        </Image.Source>
-                                    </Image>
+                                    <Image Source="{Binding AlbumImageUrl}" 
+                                           Stretch="UniformToFill"/>
                                 </Border>
 
                                 <!-- Track Info -->
