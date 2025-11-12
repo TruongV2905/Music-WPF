@@ -56,30 +56,103 @@
 
             <!-- 🔍 Search bar -->
             <DockPanel Grid.Row="0" Margin="0,0,0,20">
-                <TextBox x:Name="txtSearch"
-                         Width="500"
-                         Height="45"
-                         FontSize="16"
-                         materialDesign:HintAssist.Hint="Tìm bài hát hoặc ca sĩ..."
-                         Style="{DynamicResource MaterialDesignFilledTextBox}"
-                         Margin="0,0,15,0"
-                         Foreground="#FFF"
-                         Background="#181818"
-                         BorderBrush="#333"
-                         KeyDown="txtSearch_KeyDown"/>
-                <Button x:Name="btnSearch"
-                        Content="Tìm kiếm"
-                        Width="100"
-                        Background="#1DB954"
-                        Foreground="White"
-                        FontWeight="Bold"
-                        Cursor="Hand"
-                        Style="{DynamicResource MaterialDesignRaisedButton}"
-                        Click="btnSearch_Click">
-                    <Button.Effect>
-                        <DropShadowEffect BlurRadius="15" Color="#1DB954" ShadowDepth="0"/>
-                    </Button.Effect>
-                </Button>
+                <StackPanel DockPanel.Dock="Top" Margin="0,0,0,15">
+                    <TextBlock Text="Danh mục" FontSize="18" FontWeight="Bold" Foreground="#1DB954" Margin="0,0,0,10"/>
+                    <StackPanel Orientation="Horizontal">
+                        <Button x:Name="btnCategoryTrendy"
+                                Content="🔥 Trendy"
+                                Width="120"
+                                Height="35"
+                                Margin="0,0,10,0"
+                                Background="#1DB954"
+                                Foreground="White"
+                                FontWeight="Bold"
+                                Cursor="Hand"
+                                Click="CategoryButton_Click"
+                                Tag="Trendy"/>
+                        <Button x:Name="btnCategoryPopular"
+                                Content="⭐ Thịnh hành"
+                                Width="120"
+                                Height="35"
+                                Margin="0,0,10,0"
+                                Background="#2A2A2A"
+                                Foreground="White"
+                                FontWeight="Bold"
+                                Cursor="Hand"
+                                Click="CategoryButton_Click"
+                                Tag="Thịnh hành"/>
+                        <Button x:Name="btnCategoryNew"
+                                Content="🆕 Mới phát hành"
+                                Width="140"
+                                Height="35"
+                                Margin="0,0,10,0"
+                                Background="#2A2A2A"
+                                Foreground="White"
+                                FontWeight="Bold"
+                                Cursor="Hand"
+                                Click="CategoryButton_Click"
+                                Tag="Mới phát hành"/>
+                        <Button x:Name="btnCategoryPop"
+                                Content="🎵 Pop"
+                                Width="100"
+                                Height="35"
+                                Margin="0,0,10,0"
+                                Background="#2A2A2A"
+                                Foreground="White"
+                                FontWeight="Bold"
+                                Cursor="Hand"
+                                Click="CategoryButton_Click"
+                                Tag="Pop"/>
+                        <Button x:Name="btnCategoryRock"
+                                Content="🎸 Rock"
+                                Width="100"
+                                Height="35"
+                                Margin="0,0,10,0"
+                                Background="#2A2A2A"
+                                Foreground="White"
+                                FontWeight="Bold"
+                                Cursor="Hand"
+                                Click="CategoryButton_Click"
+                                Tag="Rock"/>
+                        <Button x:Name="btnCategoryHipHop"
+                                Content="🎤 Hip Hop"
+                                Width="110"
+                                Height="35"
+                                Margin="0,0,10,0"
+                                Background="#2A2A2A"
+                                Foreground="White"
+                                FontWeight="Bold"
+                                Cursor="Hand"
+                                Click="CategoryButton_Click"
+                                Tag="Hip Hop"/>
+                    </StackPanel>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Bottom">
+                    <TextBox x:Name="txtSearch"
+                             Width="500"
+                             Height="45"
+                             FontSize="16"
+                             materialDesign:HintAssist.Hint="Tìm bài hát hoặc ca sĩ..."
+                             Style="{DynamicResource MaterialDesignFilledTextBox}"
+                             Margin="0,0,15,0"
+                             Foreground="#FFF"
+                             Background="#181818"
+                             BorderBrush="#333"
+                             KeyDown="txtSearch_KeyDown"/>
+                    <Button x:Name="btnSearch"
+                            Content="Tìm kiếm"
+                            Width="100"
+                            Background="#1DB954"
+                            Foreground="White"
+                            FontWeight="Bold"
+                            Cursor="Hand"
+                            Style="{DynamicResource MaterialDesignRaisedButton}"
+                            Click="btnSearch_Click">
+                        <Button.Effect>
+                            <DropShadowEffect BlurRadius="15" Color="#1DB954" ShadowDepth="0"/>
+                        </Button.Effect>
+                    </Button>
+                </StackPanel>
             </DockPanel>
 
             <!-- 🎵 Danh sách bài hát -->
@@ -95,6 +168,34 @@
                           SelectionChanged="lstTracks_SelectionChanged"
                           ScrollViewer.VerticalScrollBarVisibility="Auto"
                           HorizontalContentAlignment="Stretch">
+                    
+                    <!-- Group Style để hiển thị header cho mỗi category -->
+                    <ListView.GroupStyle>
+                        <GroupStyle>
+                            <GroupStyle.HeaderTemplate>
+                                <DataTemplate>
+                                    <Border Background="#1E1E1E" 
+                                            Padding="10,15,10,10" 
+                                            Margin="0,10,0,5"
+                                            CornerRadius="8">
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding Name}" 
+                                                       FontSize="20" 
+                                                       FontWeight="Bold" 
+                                                       Foreground="#1DB954"/>
+                                            <Rectangle Height="2" 
+                                                       Fill="#1DB954" 
+                                                       Margin="0,5,0,0" 
+                                                       HorizontalAlignment="Left" 
+                                                       Width="60"
+                                                       Opacity="0.7"/>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </GroupStyle.HeaderTemplate>
+                        </GroupStyle>
+                    </ListView.GroupStyle>
+                    
                     <ListView.ItemContainerStyle>
                         <Style TargetType="ListViewItem">
                             <Setter Property="Margin" Value="4"/>

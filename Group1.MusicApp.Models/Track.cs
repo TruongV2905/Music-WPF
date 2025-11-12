@@ -24,6 +24,9 @@ namespace Group1.MusicApp.Models
         public string Duration => TimeSpan.FromMilliseconds(DurationMs).ToString(@"m\:ss");
         public string PopularityText => $"{Popularity}%";
         public string ReleaseDateText => ReleaseDate?.ToString("MMM dd, yyyy") ?? "Unknown";
+        
+        // Category for grouping
+        public string Category { get; set; }
     }
 
     public class AudioFeatures

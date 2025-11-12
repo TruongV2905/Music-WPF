@@ -43,6 +43,28 @@ namespace Group1.MusicApp.Services
             return list.Count > 0 ? list[0] : null;
         }
 
+        /// <summary>
+        /// Lấy bài hát theo danh mục (Trendy, Popular, New Releases, etc.)
+        /// </summary>
+        public async Task<List<Track>> GetTracksByCategoryAsync(string category, int limit = 20)
+        {
+            string searchQuery = category switch
+            {
+                "Trendy" => "top hits 2024",
+                "Thịnh hành" => "popular songs",
+                "Mới phát hành" => "new releases 2024",
+                "Pop" => "pop music",
+                "Rock" => "rock music",
+                "Hip Hop" => "hip hop",
+                "EDM" => "edm electronic",
+                "R&B" => "r&b soul",
+                "Country" => "country music",
+                _ => "top songs"
+            };
+
+            return await SearchTracksAsync(searchQuery, limit: limit, offset: 0);
+        }
+
         private static List<Track> ParseSearch(string json)
         {
             var list = new List<Track>();

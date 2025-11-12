@@ -2,13 +2,15 @@
 using Group1.MusicApp.Services;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Threading; // <= thêm
+using System.Windows.Threading;
 
 namespace Group1.MusicApp
 {
@@ -20,6 +22,7 @@ namespace Group1.MusicApp
 
         private bool _isPlaying = false;
         private string _currentQuery = "";
+        private string _currentCategory = "";
         private int _currentOffset = 0;
         private bool _isLoadingMore = false;
         private readonly List<Track> _currentTracks = new();
@@ -33,9 +36,9 @@ namespace Group1.MusicApp
             InitializeComponent();
         }
 
-        private void Window_Loaded(object sender, RoutedEventArgs e)
+        private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            lblNowPlaying.Text = "Ready - Search with iTunes!";
+            lblNowPlaying.Text = "Đang tải bài hát...";
 
             // Playlist view
             //if (PlaylistViewControl != null)
@@ -85,6 +88,9 @@ namespace Group1.MusicApp
                 MessageBox.Show("Không phát được audio.", "Media Failed",
                     MessageBoxButton.OK, MessageBoxImage.Error);
             };
+
+            // Tự động load danh mục Trendy khi khởi động lần đầu
+            await LoadCategoryTracksAsync("Trendy");
         }
 
         private static T FindVisualChild<T>(DependencyObject obj) where T : DependencyObject
@@ -114,6 +120,7 @@ namespace Group1.MusicApp
 
             try
             {
+                _currentCategory = ""; // Clear category when searching
                 lblNowPlaying.Text = "Đang tìm kiếm (iTunes)...";
                 lstTracks.ItemsSource = null;
                 _currentTracks.Clear();
@@ -128,9 +135,17 @@ namespace Group1.MusicApp
                 }
 
                 _currentTracks.AddRange(results);
-                lstTracks.ItemsSource = _currentTracks;
+                
+                // Không group khi search - hiển thị flat list
+                var view = CollectionViewSource.GetDefaultView(_currentTracks);
+                view.GroupDescriptions.Clear();
+                lstTracks.ItemsSource = view;
+                
                 lblNowPlaying.Text = $"Tìm thấy {_currentTracks.Count} bài hát (iTunes)";
                 ShowSearchView();
+
+                // Reset category button styles when searching
+                UpdateCategoryButtonStyles("");
             }
             catch (Exception ex)
             {
@@ -140,7 +155,7 @@ namespace Group1.MusicApp
 
         private async void ScrollViewer_ScrollChanged(object sender, ScrollChangedEventArgs e)
         {
-            if (_isLoadingMore || string.IsNullOrEmpty(_currentQuery)) return;
+            if (_isLoadingMore) return;
             var sv = sender as ScrollViewer;
             if (sv == null) return;
 
@@ -152,7 +167,18 @@ namespace Group1.MusicApp
 
                 try
                 {
-                    var moreTracks = await _itunes.SearchTracksAsync(_currentQuery, limit: 20, offset: _currentOffset);
+                    List<Track>? moreTracks = null;
+                    if (!string.IsNullOrEmpty(_currentCategory))
+                    {
+                        // Load thêm từ danh mục
+                        moreTracks = await _itunes.GetTracksByCategoryAsync(_currentCategory, limit: 20);
+                    }
+                    else if (!string.IsNullOrEmpty(_currentQuery))
+                    {
+                        // Load thêm từ tìm kiếm
+                        moreTracks = await _itunes.SearchTracksAsync(_currentQuery, limit: 20, offset: _currentOffset);
+                    }
+
                     if (moreTracks != null && moreTracks.Count > 0)
                     {
                         _currentTracks.AddRange(moreTracks);
@@ -334,6 +360,167 @@ namespace Group1.MusicApp
             SearchResultsContainer.Visibility = Visibility.Collapsed;
             PlaylistViewControl.Visibility = Visibility.Visible;
             //PlaylistViewControl.Refresh();
+        }
+
+        // ===== CATEGORY LOADING =====
+        private async Task LoadMultipleCategoriesAsync()
+        {
+            try
+            {
+                lblNowPlaying.Text = "Đang tải danh sách nhạc...";
+                ShowSearchView();
+                
+                lstTracks.ItemsSource = null;
+                _currentTracks.Clear();
+                _currentCategory = "";
+                _currentQuery = "";
+
+                // Load nhiều danh mục cùng lúc
+                var categories = new[] { "Trendy", "Thịnh hành", "Mới phát hành", "Pop", "Rock" };
+                
+                foreach (var category in categories)
+                {
+                    try
+                    {
+                        var tracks = await _itunes.GetTracksByCategoryAsync(category, limit: 6);
+                        if (tracks != null && tracks.Count > 0)
+                        {
+                            // Gán category cho mỗi track
+                            foreach (var track in tracks)
+                            {
+                                track.Category = category;
+                            }
+                            _currentTracks.AddRange(tracks);
+                        }
+                    }
+                    catch
+                    {
+                        // Bỏ qua nếu category nào đó fail
+                    }
+                }
+
+                if (_currentTracks.Count > 0)
+                {
+                    // Nhóm tracks theo category
+                    var groupedTracks = CollectionViewSource.GetDefaultView(_currentTracks);
+                    groupedTracks.GroupDescriptions.Clear();
+                    groupedTracks.GroupDescriptions.Add(new PropertyGroupDescription("Category"));
+                    
+                    lstTracks.ItemsSource = groupedTracks;
+                    lblNowPlaying.Text = $"Đã tải {_currentTracks.Count} bài hát từ {categories.Length} danh mục";
+                }
+                else
+                {
+                    lblNowPlaying.Text = "Không tìm thấy bài hát nào";
+                }
+                
+                ShowSearchView();
+                UpdateCategoryButtonStyles("");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Lỗi khi tải danh mục: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                lblNowPlaying.Text = "Lỗi khi tải danh sách nhạc";
+                ShowSearchView();
+            }
+        }
+
+        private async void CategoryButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.Tag is string category)
+            {
+                await LoadCategoryTracksAsync(category);
+            }
+        }
+
+        private async Task LoadCategoryTracksAsync(string category)
+        {
+            try
+            {
+                _currentCategory = category;
+                _currentQuery = ""; // Clear search query
+                _currentOffset = 0;
+                _isLoadingMore = false;
+
+                lblNowPlaying.Text = $"Đang tải {category}...";
+                
+                // Đảm bảo container được hiển thị trước khi load
+                ShowSearchView();
+                
+                lstTracks.ItemsSource = null;
+                _currentTracks.Clear();
+
+                // Load nhiều bài hát hơn để có đủ nội dung hiển thị
+                var results = await _itunes.GetTracksByCategoryAsync(category, limit: 30);
+                if (results == null || results.Count == 0)
+                {
+                    lblNowPlaying.Text = $"Không tìm thấy bài hát trong danh mục {category}.";
+                    // Vẫn hiển thị danh sách trống để người dùng biết
+                    lstTracks.ItemsSource = _currentTracks;
+                    UpdateCategoryButtonStyles(category);
+                    return;
+                }
+
+                _currentTracks.AddRange(results);
+                
+                // Không group khi chỉ load 1 category - hiển thị flat list
+                var view = CollectionViewSource.GetDefaultView(_currentTracks);
+                view.GroupDescriptions.Clear();
+                lstTracks.ItemsSource = view;
+                
+                lblNowPlaying.Text = $"Đã tải {_currentTracks.Count} bài hát - {category}";
+                
+                // Đảm bảo view được hiển thị
+                ShowSearchView();
+
+                // Update button styles - highlight nút được chọn
+                UpdateCategoryButtonStyles(category);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Lỗi khi tải danh mục: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                lblNowPlaying.Text = "Lỗi khi tải danh mục";
+                // Vẫn hiển thị danh sách trống
+                lstTracks.ItemsSource = _currentTracks;
+                ShowSearchView();
+                UpdateCategoryButtonStyles(category);
+            }
+        }
+
+        private void UpdateCategoryButtonStyles(string selectedCategory)
+        {
+            // Reset all buttons
+            var defaultColor = new SolidColorBrush(Color.FromRgb(42, 42, 42));
+            btnCategoryTrendy.Background = defaultColor;
+            btnCategoryPopular.Background = defaultColor;
+            btnCategoryNew.Background = defaultColor;
+            btnCategoryPop.Background = defaultColor;
+            btnCategoryRock.Background = defaultColor;
+            btnCategoryHipHop.Background = defaultColor;
+
+            // Highlight selected button
+            var selectedColor = new SolidColorBrush(Color.FromRgb(29, 185, 84)); // #1DB954
+            switch (selectedCategory)
+            {
+                case "Trendy":
+                    btnCategoryTrendy.Background = selectedColor;
+                    break;
+                case "Thịnh hành":
+                    btnCategoryPopular.Background = selectedColor;
+                    break;
+                case "Mới phát hành":
+                    btnCategoryNew.Background = selectedColor;
+                    break;
+                case "Pop":
+                    btnCategoryPop.Background = selectedColor;
+                    break;
+                case "Rock":
+                    btnCategoryRock.Background = selectedColor;
+                    break;
+                case "Hip Hop":
+                    btnCategoryHipHop.Background = selectedColor;
+                    break;
+            }
         }
     }
 }
