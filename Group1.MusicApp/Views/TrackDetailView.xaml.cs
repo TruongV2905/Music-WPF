@@ -5,14 +5,13 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using Group1.MusicApp.Models;
-using Group1.MusicApp.Utilities;
 using Group1.MusicApp.Services;
 
 namespace Group1.MusicApp.Views
 {
     public partial class TrackDetailView : UserControl
     {
-        private PlaylistService _playlistService;
+        //private PlaylistService _playlistService;
         private Track? _currentTrack;
 
         public event EventHandler<Track>? TrackAddedToPlaylist;
@@ -20,7 +19,7 @@ namespace Group1.MusicApp.Views
         public TrackDetailView()
         {
             InitializeComponent();
-            _playlistService = new PlaylistService();
+            //_playlistService = new PlaylistService();
         }
 
         /// <summary>
@@ -38,7 +37,7 @@ namespace Group1.MusicApp.Views
             GenresSection.Visibility = Visibility.Collapsed;
 
             // Update playlist button state
-            UpdatePlaylistButtonState();
+            //UpdatePlaylistButtonState();
 
             try
             {
@@ -61,8 +60,8 @@ namespace Group1.MusicApp.Views
                     AlbumImage.Source = bitmap;
                     ImagePlaceholder.Visibility = Visibility.Collapsed;
 
-                    // Extract and apply dominant color
-                    await ApplyDominantColorAsync(track.AlbumImageUrl);
+                    //// Extract and apply dominant color
+                    //await ApplyDominantColorAsync(track.AlbumImageUrl);
                 }
 
                 // Show genres if available
@@ -98,36 +97,36 @@ namespace Group1.MusicApp.Views
         /// <summary>
         /// Extract dominant color from album art and apply to background
         /// </summary>
-        private async System.Threading.Tasks.Task ApplyDominantColorAsync(string imageUrl)
-        {
-            try
-            {
-                var dominantColor = await ColorExtractor.GetDominantColorAsync(imageUrl);
-                var (startColor, endColor) = ColorExtractor.CreateGradient(dominantColor);
+        //private async System.Threading.Tasks.Task ApplyDominantColorAsync(string imageUrl)
+        //{
+        //    try
+        //    {
+        //        var dominantColor = await ColorExtractor.GetDominantColorAsync(imageUrl);
+        //        var (startColor, endColor) = ColorExtractor.CreateGradient(dominantColor);
 
-                // Animate color transition
-                var startAnimation = new ColorAnimation
-                {
-                    To = startColor,
-                    Duration = TimeSpan.FromSeconds(1),
-                    EasingFunction = new CubicEase { EasingMode = EasingMode.EaseInOut }
-                };
+        //        // Animate color transition
+        //        var startAnimation = new ColorAnimation
+        //        {
+        //            To = startColor,
+        //            Duration = TimeSpan.FromSeconds(1),
+        //            EasingFunction = new CubicEase { EasingMode = EasingMode.EaseInOut }
+        //        };
 
-                var endAnimation = new ColorAnimation
-                {
-                    To = endColor,
-                    Duration = TimeSpan.FromSeconds(1),
-                    EasingFunction = new CubicEase { EasingMode = EasingMode.EaseInOut }
-                };
+        //        var endAnimation = new ColorAnimation
+        //        {
+        //            To = endColor,
+        //            Duration = TimeSpan.FromSeconds(1),
+        //            EasingFunction = new CubicEase { EasingMode = EasingMode.EaseInOut }
+        //        };
 
-                GradientStart.BeginAnimation(GradientStop.ColorProperty, startAnimation);
-                GradientEnd.BeginAnimation(GradientStop.ColorProperty, endAnimation);
-            }
-            catch
-            {
-                // Ignore color extraction errors
-            }
-        }
+        //        GradientStart.BeginAnimation(GradientStop.ColorProperty, startAnimation);
+        //        GradientEnd.BeginAnimation(GradientStop.ColorProperty, endAnimation);
+        //    }
+        //    catch
+        //    {
+        //        // Ignore color extraction errors
+        //    }
+        //}
 
         /// <summary>
         /// Animate audio feature progress bar
@@ -178,74 +177,74 @@ namespace Group1.MusicApp.Views
         }
 
         // Hàm cập nhật trạng thái nút "Thêm vào playlist"
-        private void UpdatePlaylistButtonState()
-        {
-            if (_currentTrack == null) return;
+        //private void UpdatePlaylistButtonState()
+        //{
+        //    if (_currentTrack == null) return;
 
-            // Kiểm tra xem bài hát đã có trong playlist chưa
-            bool isInPlaylist = _playlistService.IsTrackInPlaylist(_currentTrack.Id);
+        //    // Kiểm tra xem bài hát đã có trong playlist chưa
+        //    bool isInPlaylist = _playlistService.IsTrackInPlaylist(_currentTrack.Id);
             
-            if (isInPlaylist)
-            {
-                // Nếu đã có rồi thì disable nút và đổi icon
-                AddToPlaylistButton.ToolTip = "Đã có trong playlist";
-                AddToPlaylistButton.IsEnabled = false;
-                AddToPlaylistIcon.Kind = MaterialDesignThemes.Wpf.PackIconKind.Check;
-            }
-            else
-            {
-                // Nếu chưa có thì enable nút
-                AddToPlaylistButton.ToolTip = "Thêm vào playlist";
-                AddToPlaylistButton.IsEnabled = true;
-                AddToPlaylistIcon.Kind = MaterialDesignThemes.Wpf.PackIconKind.PlaylistPlus;
-            }
-        }
+        //    if (isInPlaylist)
+        //    {
+        //        // Nếu đã có rồi thì disable nút và đổi icon
+        //        AddToPlaylistButton.ToolTip = "Đã có trong playlist";
+        //        AddToPlaylistButton.IsEnabled = false;
+        //        AddToPlaylistIcon.Kind = MaterialDesignThemes.Wpf.PackIconKind.Check;
+        //    }
+        //    else
+        //    {
+        //        // Nếu chưa có thì enable nút
+        //        AddToPlaylistButton.ToolTip = "Thêm vào playlist";
+        //        AddToPlaylistButton.IsEnabled = true;
+        //        AddToPlaylistIcon.Kind = MaterialDesignThemes.Wpf.PackIconKind.PlaylistPlus;
+        //    }
+        //}
 
         // Hàm xử lý khi click nút "Thêm vào playlist"
-        private void AddToPlaylistButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (_currentTrack == null) return;
+        //private void AddToPlaylistButton_Click(object sender, RoutedEventArgs e)
+        //{
+        //    if (_currentTrack == null) return;
 
-            try
-            {
-                // Thêm bài hát vào playlist
-                if (_playlistService.AddTrack(_currentTrack))
-                {
-                    // Thành công - hiển thị thông báo
-                    MessageBox.Show(
-                        "Đã thêm '" + _currentTrack.Name + "' vào playlist!",
-                        "Thêm thành công",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
+        //    try
+        //    {
+        //        // Thêm bài hát vào playlist
+        //        if (_playlistService.AddTrack(_currentTrack))
+        //        {
+        //            // Thành công - hiển thị thông báo
+        //            MessageBox.Show(
+        //                "Đã thêm '" + _currentTrack.Name + "' vào playlist!",
+        //                "Thêm thành công",
+        //                MessageBoxButton.OK,
+        //                MessageBoxImage.Information);
 
-                    // Cập nhật lại trạng thái nút
-                    UpdatePlaylistButtonState();
+        //            // Cập nhật lại trạng thái nút
+        //            UpdatePlaylistButtonState();
                     
-                    // Gửi event để thông báo đã thêm
-                    if (TrackAddedToPlaylist != null)
-                    {
-                        TrackAddedToPlaylist(this, _currentTrack);
-                    }
-                }
-                else
-                {
-                    // Bài hát đã có rồi
-                    MessageBox.Show(
-                        "Bài hát này đã có trong playlist rồi.",
-                        "Đã có rồi",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
-                }
-            }
-            catch (Exception ex)
-            {
-                // Lỗi - hiển thị thông báo lỗi
-                MessageBox.Show(
-                    "Lỗi khi thêm bài hát vào playlist: " + ex.Message,
-                    "Lỗi",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error);
-            }
-        }
+        //            // Gửi event để thông báo đã thêm
+        //            if (TrackAddedToPlaylist != null)
+        //            {
+        //                TrackAddedToPlaylist(this, _currentTrack);
+        //            }
+        //        }
+        //        else
+        //        {
+        //            // Bài hát đã có rồi
+        //            MessageBox.Show(
+        //                "Bài hát này đã có trong playlist rồi.",
+        //                "Đã có rồi",
+        //                MessageBoxButton.OK,
+        //                MessageBoxImage.Information);
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        // Lỗi - hiển thị thông báo lỗi
+        //        MessageBox.Show(
+        //            "Lỗi khi thêm bài hát vào playlist: " + ex.Message,
+        //            "Lỗi",
+        //            MessageBoxButton.OK,
+        //            MessageBoxImage.Error);
+        //    }
+        //}
     }
 }

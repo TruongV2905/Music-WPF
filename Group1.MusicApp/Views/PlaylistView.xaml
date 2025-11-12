@@ -70,7 +70,6 @@
                 <Button x:Name="CloseButton"
                         Grid.Column="3"
                         Style="{StaticResource MaterialDesignIconButton}"
-                        Click="CloseButton_Click"
                         ToolTip="Đóng Playlist"
                         Width="32" Height="32"
                         Padding="0">
@@ -154,7 +153,6 @@
                                 <!-- Nút Play -->
                                 <Button Grid.Column="3"
                                         Style="{StaticResource MaterialDesignIconButton}"
-                                        Click="PlayButton_Click"
                                         Tag="{Binding}"
                                         ToolTip="Phát bài hát"
                                         Margin="8,0">
@@ -166,7 +164,6 @@
                                 <!-- Nút Xóa -->
                                 <Button Grid.Column="4"
                                         Style="{StaticResource MaterialDesignIconButton}"
-                                        Click="DeleteButton_Click"
                                         Tag="{Binding TrackId}"
                                         ToolTip="Xóa khỏi playlist"
                                         Margin="8,0">
