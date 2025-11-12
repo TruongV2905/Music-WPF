@@ -167,6 +167,7 @@
                           BorderThickness="0"
                           SelectionChanged="lstTracks_SelectionChanged"
                           ScrollViewer.VerticalScrollBarVisibility="Auto"
+                          ScrollViewer.CanContentScroll="False"
                           HorizontalContentAlignment="Stretch">
                     
                     <!-- Group Style để hiển thị header cho mỗi category -->

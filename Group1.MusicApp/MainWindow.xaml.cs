@@ -137,9 +137,9 @@ namespace Group1.MusicApp
                 _currentTracks.AddRange(results);
                 
                 // Không group khi search - hiển thị flat list
-                var view = CollectionViewSource.GetDefaultView(_currentTracks);
-                view.GroupDescriptions.Clear();
-                lstTracks.ItemsSource = view;
+                // Sử dụng trực tiếp list thay vì CollectionViewSource để tránh lỗi scroll
+                lstTracks.ItemsSource = null;
+                lstTracks.ItemsSource = _currentTracks;
                 
                 lblNowPlaying.Text = $"Tìm thấy {_currentTracks.Count} bài hát (iTunes)";
                 ShowSearchView();
@@ -464,9 +464,9 @@ namespace Group1.MusicApp
                 _currentTracks.AddRange(results);
                 
                 // Không group khi chỉ load 1 category - hiển thị flat list
-                var view = CollectionViewSource.GetDefaultView(_currentTracks);
-                view.GroupDescriptions.Clear();
-                lstTracks.ItemsSource = view;
+                // Sử dụng trực tiếp list thay vì CollectionViewSource để tránh lỗi scroll
+                lstTracks.ItemsSource = null;
+                lstTracks.ItemsSource = _currentTracks;
                 
                 lblNowPlaying.Text = $"Đã tải {_currentTracks.Count} bài hát - {category}";
                 
