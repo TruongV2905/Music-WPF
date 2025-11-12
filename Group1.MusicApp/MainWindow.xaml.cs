@@ -531,5 +531,102 @@ namespace Group1.MusicApp
                 return ts.ToString(@"h\:mm\:ss");
             return ts.ToString(@"m\:ss");
         }
+
+        #region Track Detail Feature
+
+        private void btnTrackDetail_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            // Ngăn event bubbling lên ListView để không trigger SelectionChanged
+            e.Handled = true;
+
+            // Hiển thị detail ngay tại đây vì đã chặn event
+            if (sender is Button btn && btn.Tag is Track track)
+            {
+                ShowTrackDetail(track);
+            }
+        }
+
+        private void btnTrackDetail_Click(object sender, RoutedEventArgs e)
+        {
+            // Không cần nữa vì đã xử lý trong PreviewMouseDown
+        }
+
+        private void btnNowPlayingDetail_Click(object sender, RoutedEventArgs e)
+        {
+            if (_currentTrackPlaying == null)
+            {
+                MessageBox.Show("Chưa có bài hát nào đang phát.", "Thông báo",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+            ShowTrackDetail(_currentTrackPlaying);
+        }
+
+        private void ShowTrackDetail(Track track)
+        {
+            if (track == null) return;
+
+            TrackDetailViewControl.LoadTrack(track);
+            TrackDetailOverlay.Visibility = Visibility.Visible;
+
+            var fadeIn = new System.Windows.Media.Animation.DoubleAnimation
+            {
+                From = 0, To = 1,
+                Duration = TimeSpan.FromSeconds(0.3)
+            };
+
+            var slideUp = new System.Windows.Media.Animation.DoubleAnimation
+            {
+                From = 50, To = 0,
+                Duration = TimeSpan.FromSeconds(0.4),
+                EasingFunction = new System.Windows.Media.Animation.CubicEase
+                {
+                    EasingMode = System.Windows.Media.Animation.EasingMode.EaseOut
+                }
+            };
+
+            TrackDetailOverlay.BeginAnimation(OpacityProperty, fadeIn);
+            DetailTransform.BeginAnimation(System.Windows.Media.TranslateTransform.YProperty, slideUp);
+        }
+
+        private void CloseTrackDetail()
+        {
+            var fadeOut = new System.Windows.Media.Animation.DoubleAnimation
+            {
+                From = 1, To = 0,
+                Duration = TimeSpan.FromSeconds(0.2)
+            };
+
+            fadeOut.Completed += (s, e) =>
+            {
+                TrackDetailOverlay.Visibility = Visibility.Collapsed;
+            };
+
+            TrackDetailOverlay.BeginAnimation(OpacityProperty, fadeOut);
+        }
+
+        private void btnCloseDetail_Click(object sender, RoutedEventArgs e) => CloseTrackDetail();
+
+        private void DetailOverlay_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.Source == TrackDetailOverlay) CloseTrackDetail();
+        }
+
+        private void DetailContent_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            e.Handled = true;
+        }
+
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            base.OnKeyDown(e);
+            if (e.Key == Key.Escape && TrackDetailOverlay.Visibility == Visibility.Visible)
+            {
+                CloseTrackDetail();
+                e.Handled = true;
+            }
+        }
+
+        #endregion
     }
 }
