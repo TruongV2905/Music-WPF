@@ -17,6 +17,18 @@ namespace Group1.MusicApp.Models
         public string PreviewUrl { get; set; }
         public bool IsExplicit { get; set; }
 
+        // Additional iTunes fields
+        public string ArtistId { get; set; } = "";
+        public string AlbumId { get; set; } = "";
+        public int TrackNumber { get; set; }
+        public int TrackCount { get; set; }
+        public int DiscNumber { get; set; }
+        public int DiscCount { get; set; }
+        public string Country { get; set; } = "";
+        public string Currency { get; set; } = "";
+        public decimal? Price { get; set; }
+        public string ContentAdvisoryRating { get; set; } = "";
+
         // Audio Features
         public AudioFeatures AudioFeatures { get; set; }
 
@@ -24,6 +36,8 @@ namespace Group1.MusicApp.Models
         public string Duration => TimeSpan.FromMilliseconds(DurationMs).ToString(@"m\:ss");
         public string PopularityText => $"{Popularity}%";
         public string ReleaseDateText => ReleaseDate?.ToString("MMM dd, yyyy") ?? "Unknown";
+        public string TrackPositionText => TrackCount > 0 ? $"{TrackNumber} of {TrackCount}" : $"{TrackNumber}";
+        public string PriceText => Price.HasValue ? $"{Price.Value:F2} {Currency}" : "Not available";
     }
 
     public class AudioFeatures

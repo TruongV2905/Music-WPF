@@ -70,6 +70,80 @@ namespace Group1.MusicApp.Views
                     GenresList.ItemsSource = track.Genres;
                     GenresSection.Visibility = Visibility.Visible;
                 }
+                else
+                {
+                    GenresSection.Visibility = Visibility.Collapsed;
+                }
+
+                // Show Track Position
+                if (track.TrackNumber > 0)
+                {
+                    TrackPositionText.Text = track.TrackPositionText;
+                    TrackPositionSection.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    TrackPositionSection.Visibility = Visibility.Collapsed;
+                }
+
+                // Show Disc Number
+                if (track.DiscCount > 1 || track.DiscNumber > 1)
+                {
+                    DiscNumberText.Text = track.DiscCount > 1 ? $"{track.DiscNumber} of {track.DiscCount}" : $"{track.DiscNumber}";
+                    DiscNumberSection.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    DiscNumberSection.Visibility = Visibility.Collapsed;
+                }
+
+                // Show Price
+                if (track.Price.HasValue)
+                {
+                    PriceText.Text = track.PriceText;
+                    PriceSection.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    PriceSection.Visibility = Visibility.Collapsed;
+                }
+
+                // Show Country
+                if (!string.IsNullOrEmpty(track.Country))
+                {
+                    CountryText.Text = track.Country.ToUpper();
+                    CountrySection.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    CountrySection.Visibility = Visibility.Collapsed;
+                }
+
+                // Show Explicit badge
+                ExplicitSection.Visibility = track.IsExplicit ? Visibility.Visible : Visibility.Collapsed;
+
+                // Show Content Advisory
+                if (!string.IsNullOrEmpty(track.ContentAdvisoryRating))
+                {
+                    AdvisoryText.Text = track.ContentAdvisoryRating;
+                    AdvisorySection.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    AdvisorySection.Visibility = Visibility.Collapsed;
+                }
+
+                // Show Preview info
+                if (string.IsNullOrEmpty(track.PreviewUrl))
+                {
+                    PreviewInfoText.Text = "No preview available";
+                    PreviewInfoText.Foreground = new SolidColorBrush(Color.FromRgb(170, 170, 170));
+                }
+                else
+                {
+                    PreviewInfoText.Text = "30 seconds preview available from iTunes";
+                    PreviewInfoText.Foreground = new SolidColorBrush(Color.FromRgb(29, 185, 84));
+                }
 
                 // Show audio features if available
                 if (track.AudioFeatures != null)

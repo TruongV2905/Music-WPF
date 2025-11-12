@@ -12,22 +12,17 @@
         <Style x:Key="GlassCard" TargetType="Border">
             <Setter Property="Background">
                 <Setter.Value>
-                    <SolidColorBrush Color="White" Opacity="0.1"/>
+                    <SolidColorBrush Color="White" Opacity="0.15"/>
                 </Setter.Value>
             </Setter>
             <Setter Property="BorderBrush">
                 <Setter.Value>
-                    <SolidColorBrush Color="White" Opacity="0.2"/>
+                    <SolidColorBrush Color="White" Opacity="0.3"/>
                 </Setter.Value>
             </Setter>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="CornerRadius" Value="16"/>
             <Setter Property="Padding" Value="20"/>
-            <Setter Property="Effect">
-                <Setter.Value>
-                    <BlurEffect Radius="10"/>
-                </Setter.Value>
-            </Setter>
         </Style>
 
         <!-- Progress Bar Style -->
@@ -229,34 +224,138 @@
                     </Grid>
                 </Border>
 
-                <!-- Genres Section -->
+                <!-- Track Information Section -->
                 <Border Grid.Row="1"
                         Style="{StaticResource GlassCard}"
-                        Margin="0,0,0,24"
-                        x:Name="GenresSection"
-                        Visibility="Collapsed">
+                        Margin="0,0,0,24">
                     <StackPanel>
-                        <TextBlock Text="Genres"
+                        <TextBlock Text="Track Information"
                                    FontSize="20"
                                    FontWeight="SemiBold"
                                    Foreground="White"
                                    Margin="0,0,0,16"/>
-                        <ItemsControl x:Name="GenresList">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <WrapPanel/>
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Border Style="{StaticResource GenreChip}">
-                                        <TextBlock Text="{Binding}"
-                                                   Foreground="White"
-                                                   FontSize="14"/>
-                                    </Border>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
+
+                        <!-- Genres -->
+                        <StackPanel x:Name="GenresSection" Visibility="Collapsed" Margin="0,0,0,12">
+                            <TextBlock Text="Genre"
+                                       FontSize="14"
+                                       Foreground="White"
+                                       Opacity="0.7"
+                                       Margin="0,0,0,8"/>
+                            <ItemsControl x:Name="GenresList">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Style="{StaticResource GenreChip}">
+                                            <TextBlock Text="{Binding}"
+                                                       Foreground="White"
+                                                       FontSize="14"/>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+
+                        <!-- Track Position -->
+                        <StackPanel x:Name="TrackPositionSection" Visibility="Collapsed" Margin="0,0,0,12">
+                            <TextBlock Text="Track Position"
+                                       FontSize="14"
+                                       Foreground="White"
+                                       Opacity="0.7"
+                                       Margin="0,0,0,8"/>
+                            <TextBlock x:Name="TrackPositionText"
+                                       FontSize="14"
+                                       Foreground="White"/>
+                        </StackPanel>
+
+                        <!-- Disc Number -->
+                        <StackPanel x:Name="DiscNumberSection" Visibility="Collapsed" Margin="0,0,0,12">
+                            <TextBlock Text="Disc"
+                                       FontSize="14"
+                                       Foreground="White"
+                                       Opacity="0.7"
+                                       Margin="0,0,0,8"/>
+                            <TextBlock x:Name="DiscNumberText"
+                                       FontSize="14"
+                                       Foreground="White"/>
+                        </StackPanel>
+
+                        <!-- Price -->
+                        <StackPanel x:Name="PriceSection" Visibility="Collapsed" Margin="0,0,0,12">
+                            <TextBlock Text="Price"
+                                       FontSize="14"
+                                       Foreground="White"
+                                       Opacity="0.7"
+                                       Margin="0,0,0,8"/>
+                            <TextBlock x:Name="PriceText"
+                                       FontSize="14"
+                                       Foreground="#1DB954"/>
+                        </StackPanel>
+
+                        <!-- Country -->
+                        <StackPanel x:Name="CountrySection" Visibility="Collapsed" Margin="0,0,0,12">
+                            <TextBlock Text="Country"
+                                       FontSize="14"
+                                       Foreground="White"
+                                       Opacity="0.7"
+                                       Margin="0,0,0,8"/>
+                            <TextBlock x:Name="CountryText"
+                                       FontSize="14"
+                                       Foreground="White"/>
+                        </StackPanel>
+
+                        <!-- Explicit Badge -->
+                        <StackPanel x:Name="ExplicitSection" Visibility="Collapsed" Margin="0,0,0,12">
+                            <Border Background="#DD3333"
+                                    CornerRadius="4"
+                                    Padding="8,4"
+                                    HorizontalAlignment="Left">
+                                <TextBlock Text="EXPLICIT"
+                                           Foreground="White"
+                                           FontWeight="Bold"
+                                           FontSize="12"/>
+                            </Border>
+                        </StackPanel>
+
+                        <!-- Content Advisory -->
+                        <StackPanel x:Name="AdvisorySection" Visibility="Collapsed" Margin="0,0,0,12">
+                            <TextBlock Text="Content Advisory"
+                                       FontSize="14"
+                                       Foreground="White"
+                                       Opacity="0.7"
+                                       Margin="0,0,0,8"/>
+                            <TextBlock x:Name="AdvisoryText"
+                                       FontSize="14"
+                                       Foreground="#FFA500"/>
+                        </StackPanel>
+
+                        <!-- Preview Info -->
+                        <StackPanel Margin="0,0,0,12">
+                            <TextBlock Text="Preview"
+                                       FontSize="14"
+                                       Foreground="White"
+                                       Opacity="0.7"
+                                       Margin="0,0,0,8"/>
+                            <TextBlock x:Name="PreviewInfoText"
+                                       FontSize="14"
+                                       Foreground="#1DB954"/>
+                        </StackPanel>
+
+                        <!-- Source -->
+                        <StackPanel>
+                            <TextBlock Text="Source"
+                                       FontSize="14"
+                                       Foreground="White"
+                                       Opacity="0.7"
+                                       Margin="0,0,0,8"/>
+                            <TextBlock Text="🍎 iTunes Store"
+                                       FontSize="14"
+                                       Foreground="White"/>
+                        </StackPanel>
                     </StackPanel>
                 </Border>
 
