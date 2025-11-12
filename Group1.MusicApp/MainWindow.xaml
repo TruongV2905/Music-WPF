@@ -145,6 +145,7 @@
         <Grid Grid.Column="1" Grid.Row="0" Background="{StaticResource BgPrimary}" Margin="16,16,16,8">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
@@ -153,7 +154,7 @@
             </Grid.ColumnDefinitions>
 
             <!-- Search bar: giữ underline tím (vẽ tay), căn giữa hoàn hảo -->
-            <Grid Grid.Row="0" Grid.ColumnSpan="2" Margin="0,0,0,14" Height="44">
+            <Grid Grid.Row="0" Grid.ColumnSpan="2" Margin="0,0,0,10" Height="44">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
@@ -213,9 +214,93 @@
                         Click="btnSearch_Click"/>
             </Grid>
 
+            <!-- ============= CATEGORY BUTTONS ============= -->
+            <ScrollViewer Grid.Row="1" 
+                          Grid.ColumnSpan="2"
+                          Margin="0,0,0,10"
+                          HorizontalScrollBarVisibility="Auto"
+                          VerticalScrollBarVisibility="Disabled"
+                          Height="42">
+                <StackPanel Orientation="Horizontal">
+                    <Button x:Name="btnTrendy" Content="🔥 Trendy" 
+                            Style="{StaticResource FlatButton}" 
+                            Margin="0,0,8,0" 
+                            MinWidth="100"
+                            Height="36"
+                            Background="{StaticResource Accent}"
+                            Click="btnCategory_Click" Tag="trendy"/>
+                    <Button x:Name="btnPop" Content="🎤 Pop" 
+                            Style="{StaticResource FlatButton}" 
+                            Margin="0,0,8,0" 
+                            MinWidth="90"
+                            Height="36"
+                            Click="btnCategory_Click" Tag="pop"/>
+                    <Button x:Name="btnRock" Content="🎸 Rock" 
+                            Style="{StaticResource FlatButton}" 
+                            Margin="0,0,8,0" 
+                            MinWidth="90"
+                            Height="36"
+                            Click="btnCategory_Click" Tag="rock"/>
+                    <Button x:Name="btnHipHop" Content="🎧 Hip-Hop" 
+                            Style="{StaticResource FlatButton}" 
+                            Margin="0,0,8,0" 
+                            MinWidth="100"
+                            Height="36"
+                            Click="btnCategory_Click" Tag="hip hop"/>
+                    <Button x:Name="btnJazz" Content="🎷 Jazz" 
+                            Style="{StaticResource FlatButton}" 
+                            Margin="0,0,8,0" 
+                            MinWidth="90"
+                            Height="36"
+                            Click="btnCategory_Click" Tag="jazz"/>
+                    <Button x:Name="btnCountry" Content="🤠 Country" 
+                            Style="{StaticResource FlatButton}" 
+                            Margin="0,0,8,0" 
+                            MinWidth="100"
+                            Height="36"
+                            Click="btnCategory_Click" Tag="country"/>
+                    <Button x:Name="btnElectronic" Content="⚡ Electronic" 
+                            Style="{StaticResource FlatButton}" 
+                            Margin="0,0,8,0" 
+                            MinWidth="110"
+                            Height="36"
+                            Click="btnCategory_Click" Tag="electronic"/>
+                    <Button x:Name="btnClassical" Content="🎻 Classical" 
+                            Style="{StaticResource FlatButton}" 
+                            Margin="0,0,8,0" 
+                            MinWidth="100"
+                            Height="36"
+                            Click="btnCategory_Click" Tag="classical"/>
+                    <Button x:Name="btnRnB" Content="🎵 R&amp;B" 
+                            Style="{StaticResource FlatButton}" 
+                            Margin="0,0,8,0" 
+                            MinWidth="90"
+                            Height="36"
+                            Click="btnCategory_Click" Tag="r&amp;b"/>
+                    <Button x:Name="btnIndie" Content="🌟 Indie" 
+                            Style="{StaticResource FlatButton}" 
+                            Margin="0,0,8,0" 
+                            MinWidth="90"
+                            Height="36"
+                            Click="btnCategory_Click" Tag="indie"/>
+                    <Button x:Name="btnKPop" Content="💜 K-Pop" 
+                            Style="{StaticResource FlatButton}" 
+                            Margin="0,0,8,0" 
+                            MinWidth="100"
+                            Height="36"
+                            Click="btnCategory_Click" Tag="k-pop"/>
+                    <Button x:Name="btnLatin" Content="🌴 Latin" 
+                            Style="{StaticResource FlatButton}" 
+                            Margin="0,0,0,0" 
+                            MinWidth="90"
+                            Height="36"
+                            Click="btnCategory_Click" Tag="latin"/>
+                </StackPanel>
+            </ScrollViewer>
+
             <!-- Track list card -->
             <Border x:Name="SearchResultsContainer"
-                    Grid.Row="1"
+                    Grid.Row="2"
                     Grid.Column="0"
                     Background="{StaticResource BgSecondary}"
                     CornerRadius="10"
@@ -256,12 +341,12 @@
 
             <!-- Playlist View -->
             <views:PlaylistView x:Name="PlaylistViewControl"
-                                Grid.Row="1"
+                                Grid.Row="2"
                                 Grid.Column="0"
                                 Visibility="Collapsed"/>
 
             <!-- Now Playing + Lyrics -->
-            <Border Grid.Row="1"
+            <Border Grid.Row="2"
                     Background="{StaticResource BgSecondary}"
                     CornerRadius="10"
                     Padding="16" Grid.ColumnSpan="2" Margin="663,0,-31,0">
