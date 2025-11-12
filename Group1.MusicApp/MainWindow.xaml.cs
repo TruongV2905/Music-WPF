@@ -111,6 +111,10 @@ namespace Group1.MusicApp
             // Load mặc định Trendy khi khởi động
             _selectedCategoryButton = btnTrendy;
             _ = LoadCategoryAsync("trendy");
+
+            //Mood AI view
+            MoodAIViewControl.TrackPlayRequested -= MoodAIView_TrackPlayRequested;
+            MoodAIViewControl.TrackPlayRequested += MoodAIView_TrackPlayRequested;
         }
 
         private static T FindVisualChild<T>(DependencyObject obj) where T : DependencyObject
@@ -415,6 +419,14 @@ namespace Group1.MusicApp
             ShowSearchView();
         }
 
+        // New Mood AI sidebar click handler
+        private void MoodMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            MoodAIViewControl.PlaylistViewRef = PlaylistViewControl;
+            ShowMoodAIView();
+
+        }
+
         private void PlaylistMenuItem_Click(object sender, RoutedEventArgs e)
         {
             ShowPlaylistView();
@@ -462,6 +474,7 @@ namespace Group1.MusicApp
         {
             SearchResultsContainer.Visibility = Visibility.Visible;
             PlaylistViewControl.Visibility = Visibility.Collapsed;
+            MoodAIViewControl.Visibility = Visibility.Collapsed; // hide Mood AI when showing search
         }
 
         private void ShowPlaylistView()
@@ -469,6 +482,26 @@ namespace Group1.MusicApp
             SearchResultsContainer.Visibility = Visibility.Collapsed;
             PlaylistViewControl.Visibility = Visibility.Visible;
             PlaylistViewControl.Refresh();
+            MoodAIViewControl.Visibility = Visibility.Collapsed; // hide Mood AI when showing playlist
+        }
+
+        // Show Mood AI view and hide others
+        private async void ShowMoodAIView()
+        {
+            SearchResultsContainer.Visibility = Visibility.Collapsed;
+            PlaylistViewControl.Visibility = Visibility.Collapsed;
+            MoodAIViewControl.Visibility = Visibility.Visible;
+            // 🧠 Gọi AI chào hỏi khi người dùng mở tab Mood AI
+
+
+            try
+            {
+                await MoodAIViewControl.GreetUserAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[MainWindow] Greeting error: {ex.Message}");
+            }
         }
 
         // ===== Volume / Mute =====
@@ -624,6 +657,35 @@ namespace Group1.MusicApp
             {
                 CloseTrackDetail();
                 e.Handled = true;
+            }
+        }
+
+        private async void MoodAIView_TrackPlayRequested(object? sender, string trackId)
+        {
+            try
+            {
+                lblNowPlaying.Text = "🎧 Mood AI đang phát bài hát...";
+
+                // Lấy track từ iTunes
+                var track = await _itunes.GetTrackByIdAsync(trackId);
+                if (track == null)
+                {
+                    MessageBox.Show("Mood AI không tìm thấy bài hát này.", "Lỗi",
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+
+                // Hiện thanh player
+                if (BottomPlayerBar.Visibility != Visibility.Visible)
+                    BottomPlayerBar.Visibility = Visibility.Visible;
+
+                // Phát bài
+                await PlaySelectedTrackAsync(track);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Lỗi phát nhạc từ Mood AI: {ex.Message}", "Lỗi",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
