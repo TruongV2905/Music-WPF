@@ -1,7 +1,6 @@
-﻿using Group1.ApiClient;
+﻿
 using Group1.MusicApp.Models;
 using Group1.MusicApp.Services;
-using Group1.MusicApp.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -13,85 +12,107 @@ using System.Windows.Media.Imaging;
 
 namespace Group1.MusicApp
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
     public partial class MainWindow : Window
     {
-        private MusicAPI _musicApi;
-        private TrackDetailViewModel _viewModel;
-        private PlaylistService _playlistService;
+        private readonly ITunesService _itunes = new();
+        private readonly LyricsService _lyrics = new();
+        private readonly PlaylistService _playlistService = new();
+
         private bool _isPlaying = false;
         private string _currentQuery = "";
         private int _currentOffset = 0;
         private bool _isLoadingMore = false;
-        private List<Track> _currentTracks = new();
+        private readonly List<Track> _currentTracks = new();
+        private Track? _currentTrackPlaying = null;
 
         public MainWindow()
         {
             InitializeComponent();
-
-            try
-            {
-                DotNetEnv.Env.Load();
-            }
-            catch { }
-
-            string clientId = DotNetEnv.Env.GetString("SPOTIFY_CLIENT_ID", "YOUR_CLIENT_ID");
-            string clientSecret = DotNetEnv.Env.GetString("SPOTIFY_CLIENT_SECRET", "YOUR_CLIENT_SECRET");
-
-            if (clientId == "YOUR_CLIENT_ID" || clientSecret == "YOUR_CLIENT_SECRET")
-            {
-                MessageBox.Show(
-                    "Please configure your Spotify API credentials in the .env file.\n\nSee SETUP_CREDENTIALS.md for instructions.",
-                    "Configuration Required",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Warning
-                );
-            }
-
-            _musicApi = new MusicAPI(clientId, clientSecret);
-            _viewModel = new TrackDetailViewModel(_musicApi);
-            _playlistService = new PlaylistService();
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            // Window is loaded and ready
-            lblNowPlaying.Text = "Ready - Search for music!";
-            
-            // Refresh playlist view if it exists
+            lblNowPlaying.Text = "Ready - Search with iTunes!";
             if (PlaylistViewControl != null)
             {
                 PlaylistViewControl.Refresh();
+                PlaylistViewControl.TrackPlayRequested += PlaylistView_TrackPlayRequested;
+                PlaylistViewControl.CloseRequested += PlaylistView_CloseRequested;
             }
 
             var scrollViewer = FindVisualChild<ScrollViewer>(lstTracks);
             if (scrollViewer != null)
-            {
                 scrollViewer.ScrollChanged += ScrollViewer_ScrollChanged;
+        }
+
+        private static T FindVisualChild<T>(DependencyObject obj) where T : DependencyObject
+        {
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(obj); i++)
+            {
+                var child = VisualTreeHelper.GetChild(obj, i);
+                if (child is T t) return t;
+                var result = FindVisualChild<T>(child);
+                if (result != null) return result;
+            }
+            return null;
+        }
+
+
+        private async void btnSearch_Click(object sender, RoutedEventArgs e) => await PerformSearch();
+        private async void txtSearch_KeyDown(object sender, KeyEventArgs e) { if (e.Key == Key.Enter) await PerformSearch(); }
+
+        private async Task PerformSearch()
+        {
+            _currentQuery = txtSearch.Text?.Trim() ?? "";
+            if (string.IsNullOrEmpty(_currentQuery))
+            {
+                MessageBox.Show("Vui lòng nhập từ khóa tìm kiếm.", "Tìm kiếm", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            try
+            {
+                lblNowPlaying.Text = "Đang tìm kiếm (iTunes)...";
+                lstTracks.ItemsSource = null;
+                _currentTracks.Clear();
+                _currentOffset = 0;
+
+                var results = await _itunes.SearchTracksAsync(_currentQuery, limit: 20, offset: _currentOffset);
+                if (results == null || results.Count == 0)
+                {
+                    MessageBox.Show("Không tìm thấy bài hát.", "Tìm kiếm", MessageBoxButton.OK, MessageBoxImage.Information);
+                    lblNowPlaying.Text = "Không có kết quả.";
+                    return;
+                }
+
+                _currentTracks.AddRange(results);
+                lstTracks.ItemsSource = _currentTracks;
+                lblNowPlaying.Text = $"Tìm thấy {_currentTracks.Count} bài hát (iTunes)";
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Lỗi khi tìm kiếm: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
+        // Vô hạn (infinite scroll)
         private async void ScrollViewer_ScrollChanged(object sender, ScrollChangedEventArgs e)
         {
-            if (_isLoadingMore) return;
+            if (_isLoadingMore || string.IsNullOrEmpty(_currentQuery)) return;
 
-            var scrollViewer = sender as ScrollViewer;
-            if (scrollViewer == null || string.IsNullOrEmpty(_currentQuery)) return;
+            var sv = sender as ScrollViewer;
+            if (sv == null) return;
 
-            // Khi kéo gần đến cuối danh sách
-            if (scrollViewer.VerticalOffset + scrollViewer.ViewportHeight >= scrollViewer.ExtentHeight - 50)
+            if (sv.VerticalOffset + sv.ViewportHeight >= sv.ExtentHeight - 50)
             {
                 _isLoadingMore = true;
                 _currentOffset += 20;
-
                 lblNowPlaying.Text = "Đang tải thêm...";
 
                 try
                 {
-                    var moreTracks = await _viewModel.SearchTracksAsync(_currentQuery, 20, _currentOffset);
-                    if (moreTracks.Count > 0)
+                    var moreTracks = await _itunes.SearchTracksAsync(_currentQuery, limit: 20, offset: _currentOffset);
+                    if (moreTracks != null && moreTracks.Count > 0)
                     {
                         _currentTracks.AddRange(moreTracks);
                         lstTracks.ItemsSource = null;
@@ -114,325 +135,128 @@ namespace Group1.MusicApp
             }
         }
 
-        private static T FindVisualChild<T>(DependencyObject obj) where T : DependencyObject
+        // Bắt chọn item chính xác
+        private void lstTracks_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(obj); i++)
-            {
-                var child = VisualTreeHelper.GetChild(obj, i);
-                if (child is T t)
-                    return t;
-
-                var result = FindVisualChild<T>(child);
-                if (result != null)
-                    return result;
-            }
-            return null;
+            DependencyObject obj = (DependencyObject)e.OriginalSource;
+            while (obj != null && !(obj is ListViewItem))
+                obj = VisualTreeHelper.GetParent(obj);
+            if (obj is ListViewItem item) item.IsSelected = true;
         }
 
-        private async void btnSearch_Click(object sender, RoutedEventArgs e)
-        {
-            await PerformSearch();
-        }
-
-        private async void txtSearch_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.Key == Key.Enter)
-            {
-                await PerformSearch();
-            }
-        }
-
-        private async Task PerformSearch()
-        {
-            _currentQuery = txtSearch.Text?.Trim();
-
-            if (string.IsNullOrEmpty(_currentQuery))
-            {
-                MessageBox.Show("Vui lòng nhập từ khóa tìm kiếm.", "Tìm kiếm", MessageBoxButton.OK, MessageBoxImage.Information);
-                return;
-            }
-
-            try
-            {
-                lblNowPlaying.Text = "Đang tìm kiếm...";
-                lstTracks.ItemsSource = null;
-                _currentTracks.Clear();
-                _currentOffset = 0;
-
-                var results = await _viewModel.SearchTracksAsync(_currentQuery, 20, _currentOffset);
-
-                if (results == null || results.Count == 0)
-                {
-                    MessageBox.Show("Không tìm thấy kết quả", "Tìm kiếm", MessageBoxButton.OK, MessageBoxImage.Information);
-                    lblNowPlaying.Text = "Không tìm thấy kết quả";
-                    return;
-                }
-
-                _currentTracks.AddRange(results);
-                lstTracks.ItemsSource = _currentTracks;
-                lblNowPlaying.Text = $"Tìm thấy {_currentTracks.Count} bài hát";
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Lỗi khi tìm kiếm: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
-                lblNowPlaying.Text = "Lỗi khi tìm kiếm";
-            }
-        }
-
+        // ========= PLAY =========
         private async void lstTracks_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (lstTracks.SelectedItem is Track selectedTrack)
-            {
-                try
-                {
-                    lblNowPlaying.Text = "Đang tải bài hát...";
+            if (lstTracks.SelectedItem is not Track selected) return;
 
-                    // Fetch full track details
-                    var fullTrackDetails = await _viewModel.GetTrackDetailsAsync(selectedTrack.Id);
+            _currentTrackPlaying = selected;
+            lblNowPlaying.Text = "Đang tải bài hát...";
+            lblArtist.Text = selected.ArtistName ?? "";
 
-                    // Update UI with track info
-                    lblNowPlaying.Text = fullTrackDetails.Name;
-                    lblArtist.Text = fullTrackDetails.ArtistName;
-
-                    if (!string.IsNullOrEmpty(fullTrackDetails.AlbumImageUrl))
-                    {
-                        imgCover.Source = new BitmapImage(new Uri(fullTrackDetails.AlbumImageUrl));
-                    }
-
-                    // Try to play preview if available
-                    if (!string.IsNullOrEmpty(fullTrackDetails.PreviewUrl))
-                    {
-                        try
-                        {
-                            mediaPlayer.Source = new Uri(fullTrackDetails.PreviewUrl);
-                            mediaPlayer.Play();
-                            _isPlaying = true;
-                            lblNowPlaying.Text = $"Đang phát: {fullTrackDetails.Name}";
-                        }
-                        catch
-                        {
-                            _isPlaying = false;
-                            lblNowPlaying.Text = $"Đã tải: {fullTrackDetails.Name} (Không có preview)";
-                        }
-                    }
-                    else
-                    {
-                        _isPlaying = false;
-                        lblNowPlaying.Text = $"Đã tải: {fullTrackDetails.Name} (Không có preview)";
-                    }
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Lỗi khi tải bài hát: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
-                    lblNowPlaying.Text = "Lỗi khi tải bài hát";
-                }
-            }
-        }
-
-        /// <summary>
-        /// Handle adding track to playlist
-        /// </summary>
-        private void AddToPlaylistButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is Button button && button.Tag is Track track)
-            {
-                try
-                {
-                    // Check if track is already in playlist
-                    if (_playlistService.IsTrackInPlaylist(track.Id))
-                    {
-                        MessageBox.Show(
-                            $"Bài hát '{track.Name}' đã có trong playlist rồi!",
-                            "Đã có rồi",
-                            MessageBoxButton.OK,
-                            MessageBoxImage.Information);
-                        return;
-                    }
-
-                    // Add track to playlist
-                    if (_playlistService.AddTrack(track))
-                    {
-                        MessageBox.Show(
-                            $"Đã thêm '{track.Name}' vào playlist!",
-                            "Thêm thành công",
-                            MessageBoxButton.OK,
-                            MessageBoxImage.Information);
-
-                        // Refresh playlist view if it exists
-                        if (PlaylistViewControl != null)
-                        {
-                            PlaylistViewControl.Refresh();
-                        }
-                    }
-                    else
-                    {
-                        MessageBox.Show(
-                            "Không thể thêm bài hát vào playlist.",
-                            "Lỗi",
-                            MessageBoxButton.OK,
-                            MessageBoxImage.Error);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show(
-                        $"Lỗi khi thêm bài hát vào playlist: {ex.Message}",
-                        "Lỗi",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Error);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Handle menu item selection - Search
-        /// </summary>
-        private void SearchMenuItem_Selected(object sender, RoutedEventArgs e)
-        {
-            ShowSearchView();
-        }
-
-        /// <summary>
-        /// Handle menu item selection - Playlist
-        /// </summary>
-        private void PlaylistMenuItem_Selected(object sender, RoutedEventArgs e)
-        {
-            ShowPlaylistView();
-        }
-
-        /// <summary>
-        /// Show search view
-        /// </summary>
-        private void ShowSearchView()
-        {
-            SearchResultsContainer.Visibility = Visibility.Visible;
-            if (PlaylistViewControl != null)
-            {
-                PlaylistViewControl.Visibility = Visibility.Collapsed;
-            }
-        }
-
-        /// <summary>
-        /// Show playlist view
-        /// </summary>
-        private void ShowPlaylistView()
-        {
-            SearchResultsContainer.Visibility = Visibility.Collapsed;
-            if (PlaylistViewControl != null)
-            {
-                PlaylistViewControl.Visibility = Visibility.Visible;
-                PlaylistViewControl.Refresh();
-            }
-        }
-
-        /// <summary>
-        /// Handle track play request from playlist
-        /// </summary>
-        private async void PlaylistView_TrackPlayRequested(object? sender, string trackId)
-        {
-            if (string.IsNullOrEmpty(trackId))
-                return;
+            if (!string.IsNullOrEmpty(selected.AlbumImageUrl))
+                imgCover.Source = new BitmapImage(new Uri(selected.AlbumImageUrl));
 
             try
             {
-                lblNowPlaying.Text = "Loading track...";
-
-                // Fetch full track details with audio features
-                var fullTrackDetails = await _viewModel.GetTrackDetailsAsync(trackId);
-
-                // Update UI with track info
-                lblNowPlaying.Text = fullTrackDetails.Name;
-                lblArtist.Text = fullTrackDetails.ArtistName;
-
-                if (!string.IsNullOrEmpty(fullTrackDetails.AlbumImageUrl))
+                if (!string.IsNullOrEmpty(selected.PreviewUrl))
                 {
-                    imgCover.Source = new BitmapImage(new Uri(fullTrackDetails.AlbumImageUrl));
-                }
-
-                // Update metadata
-                lblDuration.Text = fullTrackDetails.Duration;
-                lblPopularity.Text = fullTrackDetails.PopularityText;
-                lblReleaseDate.Text = fullTrackDetails.ReleaseDateText;
-                lblAlbum.Text = fullTrackDetails.AlbumName;
-                metadataPanel.Visibility = Visibility.Visible;
-
-                // Update audio features if available
-                if (fullTrackDetails.AudioFeatures != null)
-                {
-                    lblEnergy.Text = $"{fullTrackDetails.AudioFeatures.EnergyPercent}%";
-                    lblDanceability.Text = $"{fullTrackDetails.AudioFeatures.DanceabilityPercent}%";
-                    lblValence.Text = $"{fullTrackDetails.AudioFeatures.ValencePercent}%";
-                    lblAcousticness.Text = $"{fullTrackDetails.AudioFeatures.AcousticnessPercent}%";
-                    audioFeaturesPanel.Visibility = Visibility.Visible;
+                    mediaPlayer.Source = new Uri(selected.PreviewUrl);
+                    mediaPlayer.Play();
+                    _isPlaying = true;
+                    lblNowPlaying.Text = $"▶ Đang phát (Preview): {selected.Name}";
                 }
                 else
                 {
-                    audioFeaturesPanel.Visibility = Visibility.Collapsed;
+                    lblNowPlaying.Text = $"{selected.Name} (Không có preview)";
+                    _isPlaying = false;
                 }
 
-                // Try to play preview if available
-                if (!string.IsNullOrEmpty(fullTrackDetails.PreviewUrl))
+                // Lyrics
+                var lyrics = await _lyrics.GetLyricsAsync(selected.ArtistName ?? "", selected.Name ?? "");
+                txtLyrics.Text = string.IsNullOrWhiteSpace(lyrics) ? "🎶 Chưa có lời bài hát..." : lyrics;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Lỗi khi phát: {ex.Message}", "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        // Play/Pause button
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            if (_currentTrackPlaying == null)
+            {
+                MessageBox.Show("Vui lòng chọn bài hát để phát.", "Chưa chọn bài hát",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            if (mediaPlayer.Source == null && !string.IsNullOrEmpty(_currentTrackPlaying.PreviewUrl))
+            {
+                mediaPlayer.Source = new Uri(_currentTrackPlaying.PreviewUrl);
+            }
+
+            if (mediaPlayer.Source == null)
+            {
+                MessageBox.Show("Bài hát này không có preview để phát.", "Không khả dụng",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            if (_isPlaying) { mediaPlayer.Pause(); _isPlaying = false; }
+            else { mediaPlayer.Play(); _isPlaying = true; }
+        }
+
+        // ========= PlaylistView events =========
+        private async void PlaylistView_TrackPlayRequested(object? sender, string trackId)
+        {
+            try
+            {
+                lblNowPlaying.Text = "Loading track...";
+                var t = await _itunes.GetTrackByIdAsync(trackId);
+                if (t == null)
                 {
-                    try
-                    {
-                        mediaPlayer.Source = new Uri(fullTrackDetails.PreviewUrl);
-                        mediaPlayer.Play();
-                        _isPlaying = true;
-                        lblNowPlaying.Text = $"Đang phát: {fullTrackDetails.Name}";
-                    }
-                    catch
-                    {
-                        _isPlaying = false;
-                        lblNowPlaying.Text = $"Đã tải: {fullTrackDetails.Name} (Không có preview)";
-                    }
+                    lblNowPlaying.Text = "Không tìm thấy bài hát để phát.";
+                    return;
+                }
+
+                _currentTrackPlaying = t;
+                lblNowPlaying.Text = t.Name;
+                lblArtist.Text = t.ArtistName;
+
+                if (!string.IsNullOrEmpty(t.AlbumImageUrl))
+                    imgCover.Source = new BitmapImage(new Uri(t.AlbumImageUrl));
+
+                if (!string.IsNullOrEmpty(t.PreviewUrl))
+                {
+                    mediaPlayer.Source = new Uri(t.PreviewUrl);
+                    mediaPlayer.Play();
+                    _isPlaying = true;
+                    lblNowPlaying.Text = $"▶ Đang phát (Preview): {t.Name}";
                 }
                 else
                 {
                     _isPlaying = false;
-                    lblNowPlaying.Text = $"Đã tải: {fullTrackDetails.Name} (Không có preview)";
+                    lblNowPlaying.Text = $"{t.Name} (Không có preview)";
                 }
+
+                var lyrics = await _lyrics.GetLyricsAsync(t.ArtistName ?? "", t.Name ?? "");
+                txtLyrics.Text = string.IsNullOrWhiteSpace(lyrics) ? "🎶 Chưa có lời bài hát..." : lyrics;
             }
             catch (Exception ex)
             {
-                MessageBox.Show(
-                    $"Lỗi khi phát bài hát: {ex.Message}",
-                    "Lỗi",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error);
+                MessageBox.Show($"Lỗi khi phát bài hát: {ex.Message}", "Lỗi",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
                 lblNowPlaying.Text = "Lỗi khi phát bài hát";
             }
         }
 
-        /// <summary>
-        /// Handle playlist view close request (switch to search view)
-        /// </summary>
-        private void PlaylistView_CloseRequested(object? sender, EventArgs e)
-        {
-            // Switch to search view
-            ShowSearchView();
-        }
+        private void PlaylistView_CloseRequested(object? sender, EventArgs e) => ShowSearchView();
 
-        private void Button_Click(object sender, RoutedEventArgs e)
-        {
-            // Play/Pause button - toggle play/pause
-            if (mediaPlayer.Source != null)
-            {
-                if (_isPlaying)
-                {
-                    mediaPlayer.Pause();
-                    _isPlaying = false;
-                }
-                else
-                {
-                    mediaPlayer.Play();
-                    _isPlaying = true;
-                }
-            }
-            else
-            {
-                MessageBox.Show("Vui lòng chọn bài hát để phát.", "Chưa chọn bài hát", 
-                    MessageBoxButton.OK, MessageBoxImage.Information);
-            }
-        }
+        // ========= View switch =========
+        private void SearchMenuItem_Selected(object sender, RoutedEventArgs e) => ShowSearchView();
+        private void PlaylistMenuItem_Selected(object sender, RoutedEventArgs e) => ShowPlaylistView();
+        private void ShowSearchView() { SearchResultsContainer.Visibility = Visibility.Visible; PlaylistViewControl.Visibility = Visibility.Collapsed; }
+        private void ShowPlaylistView() { SearchResultsContainer.Visibility = Visibility.Collapsed; PlaylistViewControl.Visibility = Visibility.Visible; PlaylistViewControl.Refresh(); }
     }
 }

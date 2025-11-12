@@ -87,10 +87,10 @@ namespace Group1.MusicApp.ViewModels
 
                 // Spotify API có giới hạn limit tối đa là 50
                 int searchLimit = Math.Min(limit, 50); // Tối đa 50 (giới hạn của Spotify API)
-                
-                var searchJson = await _musicApi.SearchAsync(query, "track", searchLimit);
+
+                var searchJson = await _musicApi.SearchRawAsync(query, "track", searchLimit);
                 var allTracks = ParseTracksFromSearchJson(searchJson);
-                
+
                 // Trả về tất cả tracks đã parse (không giới hạn nữa vì đã lọc ở API level)
                 return allTracks;
             }
@@ -102,7 +102,7 @@ namespace Group1.MusicApp.ViewModels
 
         public async Task<List<Track>> SearchTracksAsync(string query, int limit = 10, int offset = 0)
         {
-            var searchJson = await _musicApi.SearchAsync(query, "track", limit, offset);
+            var searchJson = await _musicApi.SearchRawAsync(query, "track", limit, offset);
             return ParseTracksFromSearchJson(searchJson);
         }
 
@@ -172,14 +172,14 @@ namespace Group1.MusicApp.ViewModels
                     {
                         // Lấy preview_url - có thể null
                         string? previewUrl = null;
-                        if (item.TryGetProperty("preview_url", out var previewUrlElement) && 
+                        if (item.TryGetProperty("preview_url", out var previewUrlElement) &&
                             previewUrlElement.ValueKind != JsonValueKind.Null)
                         {
                             previewUrl = previewUrlElement.GetString();
                         }
 
                         // Lấy các thông tin cơ bản
-                        if (!item.TryGetProperty("id", out var idElement) || 
+                        if (!item.TryGetProperty("id", out var idElement) ||
                             !item.TryGetProperty("name", out var nameElement))
                         {
                             continue; // Bỏ qua nếu thiếu id hoặc name

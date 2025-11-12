@@ -6,8 +6,4 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="WebView2.Runtime.X64" Version="142.0.3595.76" />
-  </ItemGroup>
-
 </Project>
