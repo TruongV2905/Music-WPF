@@ -37,6 +37,8 @@ namespace Group1.MusicApp.Views
         public void Refresh()
         {
             viewModel.LoadPlaylist();
+            // Clear và set lại ItemsSource để force refresh UI
+            PlaylistItemsControl.ItemsSource = null;
             PlaylistItemsControl.ItemsSource = viewModel.PlaylistItems;
             UpdateTrackCount();
             UpdateEmptyState();
@@ -48,6 +50,8 @@ namespace Group1.MusicApp.Views
             bool result = viewModel.AddTrack(track);
             if (result)
             {
+                // Clear và set lại ItemsSource để force refresh UI
+                PlaylistItemsControl.ItemsSource = null;
                 PlaylistItemsControl.ItemsSource = viewModel.PlaylistItems;
                 UpdateTrackCount();
                 UpdateEmptyState();
@@ -116,8 +120,8 @@ namespace Group1.MusicApp.Views
             Button? button = sender as Button;
             if (button != null)
             {
-                // Lấy TrackId từ Tag
-                string? trackId = button.Tag as string;
+                // Lấy TrackId từ Tag (có thể là string hoặc object)
+                string? trackId = button.Tag?.ToString();
                 if (!string.IsNullOrEmpty(trackId))
                 {
                     // Hỏi xác nhận trước khi xóa
@@ -132,8 +136,10 @@ namespace Group1.MusicApp.Views
                         // Xóa bài hát
                         viewModel.RemoveTrack(trackId);
                         
-                        // Cập nhật lại danh sách
+                        // Cập nhật lại danh sách bằng cách clear và set lại ItemsSource
+                        PlaylistItemsControl.ItemsSource = null;
                         PlaylistItemsControl.ItemsSource = viewModel.PlaylistItems;
+                        
                         UpdateTrackCount();
                         UpdateEmptyState();
                     }

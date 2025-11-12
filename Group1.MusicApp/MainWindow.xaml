@@ -122,8 +122,7 @@
                          FontSize="15"
                          Margin="10,0,0,0"
                          Cursor="Hand">
-                    <ListBoxItem Content="🏠  Home" Margin="0,6" />
-                    <ListBoxItem Content="📚  Your Library" Margin="0,6" Selected="PlaylistMenuItem_Selected"/>
+                    <ListBoxItem Content="🏠  Home" Margin="0,6" MouseLeftButtonUp="HomeMenuItem_Click"/>
                 </ListBox>
 
                 <Separator Margin="15,20,15,10" Background="{StaticResource Divider}" Height="1"/>
@@ -136,7 +135,7 @@
                          FontSize="14"
                          Margin="10,0,0,0"
                          Cursor="Hand">
-                    <ListBoxItem Content="❤️ My Playlist" Margin="0,5" Selected="PlaylistMenuItem_Selected"/>
+                    <ListBoxItem Content="❤️ My Playlist" Margin="0,5" MouseLeftButtonUp="PlaylistMenuItem_Click"/>
                 </ListBox>
             </StackPanel>
         </DockPanel>
@@ -320,6 +319,7 @@
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
 
                                 <Image Width="56"
@@ -333,6 +333,20 @@
                                     <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="14"/>
                                     <TextBlock Text="{Binding ArtistName}" FontSize="12" Foreground="{StaticResource TextSecondary}"/>
                                 </StackPanel>
+
+                                <Button Grid.Column="2"
+                                        Content="+"
+                                        Width="32"
+                                        Height="32"
+                                        FontSize="18"
+                                        FontWeight="Bold"
+                                        VerticalAlignment="Center"
+                                        Margin="10,0,0,0"
+                                        Style="{StaticResource FlatButton}"
+                                        Background="{StaticResource Accent}"
+                                        ToolTip="Thêm vào playlist"
+                                        Click="btnAddToPlaylist_Click"
+                                        Tag="{Binding}"/>
                             </Grid>
                         </DataTemplate>
                     </ListView.ItemTemplate>
@@ -343,13 +357,16 @@
             <views:PlaylistView x:Name="PlaylistViewControl"
                                 Grid.Row="2"
                                 Grid.Column="0"
-                                Visibility="Collapsed"/>
+                                Visibility="Collapsed"
+                                Margin="0,0,10,0"/>
 
             <!-- Now Playing + Lyrics -->
             <Border Grid.Row="2"
+                    Grid.Column="1"
                     Background="{StaticResource BgSecondary}"
                     CornerRadius="10"
-                    Padding="16" Grid.ColumnSpan="2" Margin="663,0,-31,0">
+                    Padding="16"
+                    Margin="0,0,0,0">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
